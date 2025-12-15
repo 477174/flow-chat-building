@@ -1,7 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { X, Send, Play } from 'lucide-react'
 import { useFlowStore } from '@/stores/flowStore'
-import { startSimulation, sendSimulationInput } from '@/services/api'
+import {
+  startLocalSimulation,
+  processLocalInput,
+  endLocalSimulation,
+} from '@/services/localSimulation'
 import { FlowSimulationStatus } from '@/types/flow'
 
 export default function SimulationPanel() {
@@ -10,6 +14,8 @@ export default function SimulationPanel() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const {
+    nodes,
+    edges,
     simulationId,
     simulationStatus,
     simulationMessages,
@@ -22,11 +28,11 @@ export default function SimulationPanel() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [simulationMessages])
 
-  const handleStart = async () => {
+  const handleStart = () => {
     if (!simulationId) return
     setIsProcessing(true)
     try {
-      const response = await startSimulation(simulationId)
+      const response = startLocalSimulation(simulationId, nodes, edges)
       updateSimulation({
         status: response.status,
         messages: response.messages,
@@ -40,11 +46,11 @@ export default function SimulationPanel() {
     }
   }
 
-  const handleSendMessage = async () => {
+  const handleSendMessage = () => {
     if (!simulationId || !inputText.trim()) return
     setIsProcessing(true)
     try {
-      const response = await sendSimulationInput(simulationId, { text: inputText })
+      const response = processLocalInput(simulationId, { text: inputText }, nodes, edges)
       updateSimulation({
         status: response.status,
         messages: response.messages,
@@ -59,11 +65,11 @@ export default function SimulationPanel() {
     }
   }
 
-  const handleButtonClick = async (buttonId: string) => {
+  const handleButtonClick = (buttonId: string) => {
     if (!simulationId) return
     setIsProcessing(true)
     try {
-      const response = await sendSimulationInput(simulationId, { button_id: buttonId })
+      const response = processLocalInput(simulationId, { button_id: buttonId }, nodes, edges)
       updateSimulation({
         status: response.status,
         messages: response.messages,
@@ -75,6 +81,13 @@ export default function SimulationPanel() {
     } finally {
       setIsProcessing(false)
     }
+  }
+
+  const handleClose = () => {
+    if (simulationId) {
+      endLocalSimulation(simulationId)
+    }
+    endSimulation()
   }
 
   const isCompleted =
@@ -96,7 +109,7 @@ export default function SimulationPanel() {
             </p>
           </div>
           <button
-            onClick={endSimulation}
+            onClick={handleClose}
             className="p-1 hover:bg-white/20 rounded"
           >
             <X className="w-5 h-5" />

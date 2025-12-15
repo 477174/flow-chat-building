@@ -1,0 +1,230 @@
+{
+  "name": "IndoorTec Button Flow",
+  "description": "Qualification flow for IndoorTec leads using buttons and option lists",
+  "nodes": [
+    {
+      "id": "start-1",
+      "type": "start",
+      "position": { "x": 400, "y": 0 },
+      "data": { "label": "Start" }
+    },
+    {
+      "id": "greeting-1",
+      "type": "button",
+      "position": { "x": 300, "y": 120 },
+      "data": {
+        "label": "Greeting",
+        "content": "Olá! Bem-vindo à Indoortec! 👋\n\nSomos especialistas em totens de mídia indoor para divulgação de promoções e produtos no seu estabelecimento.\n\nTransforme a comunicação visual do seu negócio e aumente suas vendas!\n\nPara melhor atendê-lo, responda as perguntas abaixo ⬇️\n\nQual o motivo do seu contato?",
+        "variable_name": "contact_reason",
+        "buttons": [
+          { "id": "conhecer_totens", "label": "Conhecer os TOTENS" },
+          { "id": "revendedor", "label": "Quero ser revendedor" },
+          { "id": "suporte", "label": "Suporte técnico" }
+        ]
+      }
+    },
+    {
+      "id": "support-ok-1",
+      "type": "button",
+      "position": { "x": 650, "y": 320 },
+      "data": {
+        "label": "Support Redirect",
+        "content": "Clique no botão OK",
+        "buttons": [
+          { "id": "ok", "label": "OK" }
+        ]
+      }
+    },
+    {
+      "id": "support-end-1",
+      "type": "end",
+      "position": { "x": 700, "y": 460 },
+      "data": { "label": "Support End" }
+    },
+    {
+      "id": "pharmacy-1",
+      "type": "button",
+      "position": { "x": 250, "y": 380 },
+      "data": {
+        "label": "Pharmacy Question",
+        "content": "Você trabalha com farmácia?",
+        "variable_name": "is_pharmacy",
+        "buttons": [
+          { "id": "sim", "label": "Sim" },
+          { "id": "outro_segmento", "label": "Outro Segmento" }
+        ]
+      }
+    },
+    {
+      "id": "segment-list-1",
+      "type": "option_list",
+      "position": { "x": 400, "y": 560 },
+      "data": {
+        "label": "Segment Selection",
+        "content": "Selecione uma opção da lista:",
+        "list_title": "Lista de Opções",
+        "list_button_label": "Selecionar segmento",
+        "variable_name": "segment",
+        "options": [
+          { "id": "supermercado", "title": "Supermercado", "description": "Varejo alimentar" },
+          { "id": "acougue", "title": "Açougue", "description": "Casa de carnes" },
+          { "id": "hortifruti", "title": "Hortifruti", "description": "Frutas e verduras" },
+          { "id": "construcao", "title": "Construção", "description": "Material de construção" },
+          { "id": "pet_shop", "title": "Pet-Shop", "description": "Produtos para animais" },
+          { "id": "outro", "title": "Outro", "description": "Outro segmento" }
+        ]
+      }
+    },
+    {
+      "id": "role-pharmacy-1",
+      "type": "button",
+      "position": { "x": 50, "y": 560 },
+      "data": {
+        "label": "Role (Pharmacy)",
+        "content": "Qual sua função na farmácia?",
+        "variable_name": "role",
+        "buttons": [
+          { "id": "proprietario", "label": "Proprietário" },
+          { "id": "gerente", "label": "Gerente" },
+          { "id": "funcionario", "label": "Funcionário" }
+        ]
+      }
+    },
+    {
+      "id": "role-other-1",
+      "type": "button",
+      "position": { "x": 400, "y": 800 },
+      "data": {
+        "label": "Role (Other)",
+        "content": "Qual sua função na empresa?",
+        "variable_name": "role",
+        "buttons": [
+          { "id": "proprietario", "label": "Proprietário" },
+          { "id": "gerente", "label": "Gerente" },
+          { "id": "funcionario", "label": "Funcionário" }
+        ]
+      }
+    },
+    {
+      "id": "message-package-1",
+      "type": "message",
+      "position": { "x": 200, "y": 780 },
+      "data": {
+        "label": "Package Message",
+        "content": "Apresentação Completa Indoortec pra Seu segmento!!\n\nPreparei um material especial para você conhecer melhor nossas soluções.\n\nEm breve você receberá os detalhes! 🎯",
+        "message_type": "text"
+      }
+    },
+    {
+      "id": "end-completed-1",
+      "type": "end",
+      "position": { "x": 250, "y": 950 },
+      "data": { "label": "Completed" }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-start-greeting",
+      "source": "start-1",
+      "target": "greeting-1"
+    },
+    {
+      "id": "edge-greeting-support",
+      "source": "greeting-1",
+      "target": "support-ok-1",
+      "sourceHandle": "suporte",
+      "label": "Suporte"
+    },
+    {
+      "id": "edge-support-end",
+      "source": "support-ok-1",
+      "target": "support-end-1",
+      "sourceHandle": "ok"
+    },
+    {
+      "id": "edge-greeting-pharmacy-totens",
+      "source": "greeting-1",
+      "target": "pharmacy-1",
+      "sourceHandle": "conhecer_totens",
+      "label": "Conhecer TOTENS"
+    },
+    {
+      "id": "edge-greeting-pharmacy-revendedor",
+      "source": "greeting-1",
+      "target": "pharmacy-1",
+      "sourceHandle": "revendedor",
+      "label": "Revendedor"
+    },
+    {
+      "id": "edge-pharmacy-role",
+      "source": "pharmacy-1",
+      "target": "role-pharmacy-1",
+      "sourceHandle": "sim",
+      "label": "Sim (Farmácia)"
+    },
+    {
+      "id": "edge-pharmacy-segment",
+      "source": "pharmacy-1",
+      "target": "segment-list-1",
+      "sourceHandle": "outro_segmento",
+      "label": "Outro Segmento"
+    },
+    {
+      "id": "edge-segment-role-1",
+      "source": "segment-list-1",
+      "target": "role-other-1",
+      "sourceHandle": "supermercado"
+    },
+    {
+      "id": "edge-segment-role-2",
+      "source": "segment-list-1",
+      "target": "role-other-1",
+      "sourceHandle": "acougue"
+    },
+    {
+      "id": "edge-segment-role-3",
+      "source": "segment-list-1",
+      "target": "role-other-1",
+      "sourceHandle": "hortifruti"
+    },
+    {
+      "id": "edge-segment-role-4",
+      "source": "segment-list-1",
+      "target": "role-other-1",
+      "sourceHandle": "construcao"
+    },
+    {
+      "id": "edge-segment-role-5",
+      "source": "segment-list-1",
+      "target": "role-other-1",
+      "sourceHandle": "pet_shop"
+    },
+    {
+      "id": "edge-segment-role-6",
+      "source": "segment-list-1",
+      "target": "role-other-1",
+      "sourceHandle": "outro"
+    },
+    {
+      "id": "edge-role-pharmacy-message",
+      "source": "role-pharmacy-1",
+      "target": "message-package-1",
+      "sourceHandle": "default"
+    },
+    {
+      "id": "edge-role-other-message",
+      "source": "role-other-1",
+      "target": "message-package-1",
+      "sourceHandle": "default"
+    },
+    {
+      "id": "edge-message-end",
+      "source": "message-package-1",
+      "target": "end-completed-1"
+    }
+  ],
+  "viewport": { "x": 100, "y": 50, "zoom": 0.8 },
+  "is_global": false,
+  "is_active": true,
+  "tags": ["indoortec", "qualification", "button_flow"]
+}
