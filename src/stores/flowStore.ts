@@ -33,6 +33,7 @@ interface FlowState {
   isActive: boolean
   tags: string[]
   isDirty: boolean
+  saveVersion: number // Increments on each save to trigger list refresh
 
   // Simulation state
   isSimulating: boolean
@@ -98,6 +99,7 @@ export const useFlowStore = create<FlowState>((set) => ({
   nodes: initialNodes,
   edges: initialEdges,
   viewport: { x: 0, y: 0, zoom: 1 },
+  saveVersion: 0,
   flowId: null,
   flowName: 'New Flow',
   flowDescription: '',
@@ -254,7 +256,7 @@ export const useFlowStore = create<FlowState>((set) => ({
 
   setFlowId: (flowId) => set({ flowId }),
 
-  markClean: () => set({ isDirty: false }),
+  markClean: () => set((state) => ({ isDirty: false, saveVersion: state.saveVersion + 1 })),
 
   // Simulation actions
   startSimulation: (simulationId) =>

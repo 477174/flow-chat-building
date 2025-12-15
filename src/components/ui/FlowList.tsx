@@ -8,7 +8,7 @@ export default function FlowList() {
   const [flows, setFlows] = useState<FlowTemplate[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
-  const { flowId, loadFlow, resetFlow, isDirty } = useFlowStore()
+  const { flowId, loadFlow, resetFlow, isDirty, saveVersion } = useFlowStore()
 
   const fetchFlows = async () => {
     setIsLoading(true)
@@ -25,6 +25,13 @@ export default function FlowList() {
   useEffect(() => {
     fetchFlows()
   }, [])
+
+  // Re-fetch when saveVersion changes (after saving a flow)
+  useEffect(() => {
+    if (saveVersion > 0) {
+      fetchFlows()
+    }
+  }, [saveVersion])
 
   const handleSelectFlow = (flow: FlowTemplate) => {
     if (isDirty) {

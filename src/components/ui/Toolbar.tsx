@@ -84,7 +84,15 @@ export default function Toolbar() {
       markClean()
     } catch (error) {
       console.error('Failed to save flow:', error)
-      alert('Failed to save flow. Please try again.')
+      // Extract error message from Axios error response
+      let errorMessage = 'Failed to save flow. Please try again.'
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { data?: { detail?: string } } }
+        if (axiosError.response?.data?.detail) {
+          errorMessage = `Failed to save flow: ${axiosError.response.data.detail}`
+        }
+      }
+      alert(errorMessage)
     } finally {
       setIsSaving(false)
     }

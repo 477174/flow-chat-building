@@ -9,7 +9,7 @@ import type {
 } from '@/types/flow'
 
 const api = axios.create({
-  baseURL: '/api/flow-builder',
+  baseURL: '/api',
   headers: {
     'Content-Type': 'application/json',
   },
