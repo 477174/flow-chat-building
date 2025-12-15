@@ -5,8 +5,6 @@ import type { CustomNode, FlowListOption } from '@/types/flow'
 
 function OptionListNode({ id, data, selected }: NodeProps<CustomNode>) {
   const options = (data.options as FlowListOption[] | undefined) ?? []
-  const listTitle = (data.list_title as string) || 'Options'
-  const buttonLabel = (data.list_button_label as string) || 'Select'
 
   const containerRef = useRef<HTMLDivElement>(null)
   const optionRefs = useRef<Map<string, HTMLDivElement>>(new Map())
@@ -68,32 +66,16 @@ function OptionListNode({ id, data, selected }: NodeProps<CustomNode>) {
         </div>
       )}
 
-      {/* List preview */}
-      <div className="px-3 py-2 border-b border-gray-100">
-        <div className="text-xs text-gray-500 mb-1">List Title</div>
-        <div className="text-sm font-medium text-gray-700">{listTitle}</div>
-      </div>
-
-      {/* Button that opens the list */}
-      <div className="px-3 py-2 border-b border-gray-100">
-        <div className="flex items-center justify-center px-3 py-1.5 bg-indigo-100 rounded text-sm text-indigo-700 font-medium">
-          {buttonLabel}
-        </div>
-      </div>
-
-      {/* Options preview */}
-      <div className="p-2 space-y-1 max-h-[150px] overflow-y-auto">
+      {/* Options */}
+      <div className="p-2 space-y-1">
         {options.length > 0 ? (
           options.map((option: FlowListOption) => (
             <div
               key={option.id}
               ref={setOptionRef(option.id)}
-              className="flex flex-col px-3 py-1.5 bg-indigo-50 rounded text-sm"
+              className="flex items-center justify-between px-3 py-1.5 bg-indigo-100 rounded text-sm"
             >
-              <span className="text-indigo-800 font-medium">{option.title}</span>
-              {option.description && (
-                <span className="text-xs text-indigo-600">{option.description}</span>
-              )}
+              <span className="text-indigo-800">{option.title}</span>
             </div>
           ))
         ) : (
