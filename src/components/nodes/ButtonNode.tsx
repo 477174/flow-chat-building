@@ -92,7 +92,7 @@ function ButtonNode({ id, data, selected }: NodeProps<CustomNode>) {
             position={Position.Right}
             id={button.id}
             className="!w-2.5 !h-2.5 !bg-purple-500 !border-2 !border-white"
-            style={{ top: topPos, transform: 'translateY(-50%)' }}
+            style={{ top: topPos, transform: 'translate(50%, -50%)' }}
           />
         )
       })}

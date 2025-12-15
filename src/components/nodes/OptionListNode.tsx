@@ -94,7 +94,7 @@ function OptionListNode({ id, data, selected }: NodeProps<CustomNode>) {
             position={Position.Right}
             id={option.id}
             className="!w-2.5 !h-2.5 !bg-indigo-500 !border-2 !border-white"
-            style={{ top: topPos, transform: 'translateY(-50%)' }}
+            style={{ top: topPos, transform: 'translate(50%, -50%)' }}
           />
         )
       })}
