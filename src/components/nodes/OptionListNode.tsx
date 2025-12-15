@@ -86,14 +86,15 @@ function OptionListNode({ id, data, selected }: NodeProps<CustomNode>) {
       {/* Option handles - positioned based on measured option positions */}
       {options.map((option: FlowListOption) => {
         const topPos = optionPositions.get(option.id)
+        if (topPos === undefined) return null
         return (
           <Handle
             key={option.id}
             type="source"
             position={Position.Right}
             id={option.id}
-            className="w-2.5 h-2.5 bg-indigo-500 border-2 border-white"
-            style={{ top: topPos ?? 0 }}
+            className="!w-2.5 !h-2.5 !bg-indigo-500 !border-2 !border-white"
+            style={{ top: topPos, transform: 'translateY(-50%)' }}
           />
         )
       })}

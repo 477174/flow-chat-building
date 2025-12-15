@@ -84,14 +84,15 @@ function ButtonNode({ id, data, selected }: NodeProps<CustomNode>) {
       {/* Button handles - positioned based on measured button positions */}
       {buttons.map((button: FlowButtonOption) => {
         const topPos = buttonPositions.get(button.id)
+        if (topPos === undefined) return null
         return (
           <Handle
             key={button.id}
             type="source"
             position={Position.Right}
             id={button.id}
-            className="w-2.5 h-2.5 bg-purple-500 border-2 border-white"
-            style={{ top: topPos ?? 0 }}
+            className="!w-2.5 !h-2.5 !bg-purple-500 !border-2 !border-white"
+            style={{ top: topPos, transform: 'translateY(-50%)' }}
           />
         )
       })}
