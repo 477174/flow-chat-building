@@ -101,4 +101,27 @@ export function createSimulationWebSocket(simulationId: string): WebSocket {
   return new WebSocket(`${protocol}//${host}/api/simulations/${simulationId}/ws`)
 }
 
+// Active Flow Settings
+export interface ActiveFlowResponse {
+  active_flow_id: string | null
+  active_flow_name: string | null
+  is_active: boolean
+}
+
+export async function getActiveFlow(): Promise<ActiveFlowResponse> {
+  const { data } = await api.get<ActiveFlowResponse>('/settings/active-flow')
+  return data
+}
+
+export async function setActiveFlow(flowId: string): Promise<ActiveFlowResponse> {
+  const { data } = await api.post<ActiveFlowResponse>('/settings/active-flow', {
+    flow_id: flowId,
+  })
+  return data
+}
+
+export async function clearActiveFlow(): Promise<void> {
+  await api.delete('/settings/active-flow')
+}
+
 export default api

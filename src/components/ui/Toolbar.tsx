@@ -1,9 +1,12 @@
-import { Save, Play, FileText, Settings, Upload } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Save, Play, FileText, Settings, Upload, Zap, ZapOff } from 'lucide-react'
 import { useFlowStore } from '@/stores/flowStore'
+import { getActiveFlow, setActiveFlow, clearActiveFlow } from '@/services/api'
 import type { FlowNodeType, FlowNodeBase, FlowEdgeBase } from '@/types/flow'
 
 export default function Toolbar() {
   const {
+    flowId,
     flowName,
     flowDescription,
     isGlobal,
@@ -18,6 +21,25 @@ export default function Toolbar() {
     startSimulation,
     setFlowMeta,
   } = useFlowStore()
+
+  const [activeFlowId, setActiveFlowId] = useState<string | null>(null)
+  const [isSettingActive, setIsSettingActive] = useState(false)
+
+  // Check if current flow is the active flow
+  const isCurrentFlowActive = flowId && activeFlowId === flowId
+
+  // Load active flow status on mount
+  useEffect(() => {
+    const fetchActiveFlow = async () => {
+      try {
+        const response = await getActiveFlow()
+        setActiveFlowId(response.active_flow_id)
+      } catch (error) {
+        console.error('Failed to fetch active flow:', error)
+      }
+    }
+    fetchActiveFlow()
+  }, [])
 
   const handleSave = () => {
     const flowNodes: FlowNodeBase[] = nodes.map((n) => ({
@@ -101,6 +123,31 @@ export default function Toolbar() {
     startSimulation(simulationId)
   }
 
+  const handleSetActiveFlow = async () => {
+    if (!flowId) {
+      alert('Please save the flow first before setting it as active.')
+      return
+    }
+
+    setIsSettingActive(true)
+    try {
+      if (isCurrentFlowActive) {
+        // Clear active flow
+        await clearActiveFlow()
+        setActiveFlowId(null)
+      } else {
+        // Set this flow as active
+        const response = await setActiveFlow(flowId)
+        setActiveFlowId(response.active_flow_id)
+      }
+    } catch (error) {
+      console.error('Failed to set active flow:', error)
+      alert('Failed to set active flow. Please try again.')
+    } finally {
+      setIsSettingActive(false)
+    }
+  }
+
   return (
     <div className="flex items-center justify-between px-4 py-2 bg-white border-b border-gray-200">
       <div className="flex items-center gap-4">
@@ -116,6 +163,12 @@ export default function Toolbar() {
           {isDirty && (
             <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded">
               Unsaved
+            </span>
+          )}
+          {isCurrentFlowActive && (
+            <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded flex items-center gap-1">
+              <Zap className="w-3 h-3" />
+              Active
             </span>
           )}
         </div>
@@ -138,6 +191,29 @@ export default function Toolbar() {
         >
           <Save className="w-4 h-4" />
           Save
+        </button>
+
+        <button
+          type="button"
+          onClick={handleSetActiveFlow}
+          disabled={isSettingActive}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg disabled:opacity-50 ${
+            isCurrentFlowActive
+              ? 'bg-green-500 text-white hover:bg-green-600'
+              : 'bg-orange-500 text-white hover:bg-orange-600'
+          }`}
+        >
+          {isCurrentFlowActive ? (
+            <>
+              <ZapOff className="w-4 h-4" />
+              Deactivate
+            </>
+          ) : (
+            <>
+              <Zap className="w-4 h-4" />
+              Set Active
+            </>
+          )}
         </button>
 
         <button
