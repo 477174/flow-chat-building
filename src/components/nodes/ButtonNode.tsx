@@ -34,7 +34,7 @@ function ButtonNode({ data, selected }: NodeProps<CustomNode>) {
 
       <div className="p-2 space-y-1">
         {buttons.length > 0 ? (
-          buttons.map((button: FlowButtonOption, index: number) => (
+          buttons.map((button: FlowButtonOption) => (
             <div
               key={button.id}
               className="relative flex items-center justify-between px-3 py-1.5 bg-purple-100 rounded text-sm"
@@ -44,8 +44,7 @@ function ButtonNode({ data, selected }: NodeProps<CustomNode>) {
                 type="source"
                 position={Position.Right}
                 id={button.id}
-                className="w-2.5 h-2.5 bg-purple-500 border-2 border-white !right-[-8px]"
-                style={{ top: `${(index + 1) * 28 + 12}px` }}
+                className="w-2.5 h-2.5 bg-purple-500 border-2 border-white !absolute !top-1/2 !-translate-y-1/2 !right-[-12px]"
               />
             </div>
           ))

@@ -50,7 +50,7 @@ function OptionListNode({ data, selected }: NodeProps<CustomNode>) {
       {/* Options preview */}
       <div className="p-2 space-y-1 max-h-[150px] overflow-y-auto">
         {options.length > 0 ? (
-          options.map((option: FlowListOption, index: number) => (
+          options.map((option: FlowListOption) => (
             <div
               key={option.id}
               className="relative flex flex-col px-3 py-1.5 bg-indigo-50 rounded text-sm"
@@ -63,8 +63,7 @@ function OptionListNode({ data, selected }: NodeProps<CustomNode>) {
                 type="source"
                 position={Position.Right}
                 id={option.id}
-                className="w-2.5 h-2.5 bg-indigo-500 border-2 border-white !right-[-8px]"
-                style={{ top: `${180 + index * 44}px` }}
+                className="w-2.5 h-2.5 bg-indigo-500 border-2 border-white !absolute !top-1/2 !-translate-y-1/2 !right-[-12px]"
               />
             </div>
           ))
