@@ -1,15 +1,49 @@
-import { memo } from 'react'
-import { Handle, Position, type NodeProps } from '@xyflow/react'
+import { memo, useRef, useState, useLayoutEffect } from 'react'
+import { Handle, Position, useUpdateNodeInternals, type NodeProps } from '@xyflow/react'
 import { List } from 'lucide-react'
 import type { CustomNode, FlowListOption } from '@/types/flow'
 
-function OptionListNode({ data, selected }: NodeProps<CustomNode>) {
+function OptionListNode({ id, data, selected }: NodeProps<CustomNode>) {
   const options = (data.options as FlowListOption[] | undefined) ?? []
   const listTitle = (data.list_title as string) || 'Options'
   const buttonLabel = (data.list_button_label as string) || 'Select'
 
+  const containerRef = useRef<HTMLDivElement>(null)
+  const optionRefs = useRef<Map<string, HTMLDivElement>>(new Map())
+  const [optionPositions, setOptionPositions] = useState<Map<string, number>>(new Map())
+  const updateNodeInternals = useUpdateNodeInternals()
+
+  useLayoutEffect(() => {
+    if (!containerRef.current) return
+
+    const containerRect = containerRef.current.getBoundingClientRect()
+    const positions = new Map<string, number>()
+
+    optionRefs.current.forEach((element, optionId) => {
+      if (element) {
+        const optionRect = element.getBoundingClientRect()
+        // Calculate center of option relative to container top
+        const centerY = optionRect.top - containerRect.top + optionRect.height / 2
+        positions.set(optionId, centerY)
+      }
+    })
+
+    setOptionPositions(positions)
+    // Tell React Flow to recalculate handle positions
+    updateNodeInternals(id)
+  }, [id, options, data.content, updateNodeInternals])
+
+  const setOptionRef = (optionId: string) => (el: HTMLDivElement | null) => {
+    if (el) {
+      optionRefs.current.set(optionId, el)
+    } else {
+      optionRefs.current.delete(optionId)
+    }
+  }
+
   return (
     <div
+      ref={containerRef}
       className={`
         min-w-[240px] max-w-[320px] rounded-lg shadow-md bg-white border-2
         ${selected ? 'border-indigo-500' : 'border-gray-200'}
@@ -53,24 +87,34 @@ function OptionListNode({ data, selected }: NodeProps<CustomNode>) {
           options.map((option: FlowListOption) => (
             <div
               key={option.id}
-              className="relative flex flex-col px-3 py-1.5 bg-indigo-50 rounded text-sm"
+              ref={setOptionRef(option.id)}
+              className="flex flex-col px-3 py-1.5 bg-indigo-50 rounded text-sm"
             >
               <span className="text-indigo-800 font-medium">{option.title}</span>
               {option.description && (
                 <span className="text-xs text-indigo-600">{option.description}</span>
               )}
-              <Handle
-                type="source"
-                position={Position.Right}
-                id={option.id}
-                className="w-2.5 h-2.5 bg-indigo-500 border-2 border-white !absolute !top-1/2 !-translate-y-1/2 !right-[-12px]"
-              />
             </div>
           ))
         ) : (
           <p className="text-xs text-gray-400 text-center py-1">No options added</p>
         )}
       </div>
+
+      {/* Option handles - positioned based on measured option positions */}
+      {options.map((option: FlowListOption) => {
+        const topPos = optionPositions.get(option.id)
+        return (
+          <Handle
+            key={option.id}
+            type="source"
+            position={Position.Right}
+            id={option.id}
+            className="w-2.5 h-2.5 bg-indigo-500 border-2 border-white"
+            style={{ top: topPos ?? 0 }}
+          />
+        )
+      })}
 
       <Handle
         type="source"
