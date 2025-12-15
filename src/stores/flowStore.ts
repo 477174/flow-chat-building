@@ -68,6 +68,7 @@ interface FlowState {
     isActive?: boolean
     tags?: string[]
   }) => void
+  setFlowId: (flowId: string) => void
   markClean: () => void
 
   // Simulation actions
@@ -250,6 +251,8 @@ export const useFlowStore = create<FlowState>((set) => ({
       tags: meta.tags ?? state.tags,
       isDirty: true,
     })),
+
+  setFlowId: (flowId) => set({ flowId }),
 
   markClean: () => set({ isDirty: false }),
 

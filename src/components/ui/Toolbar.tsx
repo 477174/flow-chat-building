@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Save, Play, FileText, Settings, Upload, Zap, ZapOff } from 'lucide-react'
+import { Save, Play, FileText, Settings, Upload, Download, Zap, ZapOff } from 'lucide-react'
 import { useFlowStore } from '@/stores/flowStore'
-import { getActiveFlow, setActiveFlow, clearActiveFlow } from '@/services/api'
+import { getActiveFlow, setActiveFlow, clearActiveFlow, createFlow, updateFlow } from '@/services/api'
 import type { FlowNodeType, FlowNodeBase, FlowEdgeBase } from '@/types/flow'
 
 export default function Toolbar() {
@@ -20,10 +20,12 @@ export default function Toolbar() {
     loadFlow,
     startSimulation,
     setFlowMeta,
+    setFlowId,
   } = useFlowStore()
 
   const [activeFlowId, setActiveFlowId] = useState<string | null>(null)
   const [isSettingActive, setIsSettingActive] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
 
   // Check if current flow is the active flow
   const isCurrentFlowActive = flowId && activeFlowId === flowId
@@ -41,7 +43,54 @@ export default function Toolbar() {
     fetchActiveFlow()
   }, [])
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    const flowNodes: FlowNodeBase[] = nodes.map((n) => ({
+      id: n.id,
+      type: n.type as FlowNodeType,
+      position: n.position,
+      data: n.data,
+    }))
+
+    const flowEdges: FlowEdgeBase[] = edges.map((e) => ({
+      id: e.id,
+      source: e.source,
+      target: e.target,
+      source_handle: e.sourceHandle ?? undefined,
+      target_handle: e.targetHandle ?? undefined,
+      label: typeof e.label === 'string' ? e.label : undefined,
+    }))
+
+    const flowData = {
+      name: flowName,
+      description: flowDescription,
+      nodes: flowNodes,
+      edges: flowEdges,
+      viewport,
+      is_global: isGlobal,
+      is_active: isActive,
+      tags,
+    }
+
+    setIsSaving(true)
+    try {
+      if (flowId) {
+        // Update existing flow
+        await updateFlow(flowId, flowData)
+      } else {
+        // Create new flow
+        const savedFlow = await createFlow(flowData)
+        setFlowId(savedFlow._id)
+      }
+      markClean()
+    } catch (error) {
+      console.error('Failed to save flow:', error)
+      alert('Failed to save flow. Please try again.')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleExport = () => {
     const flowNodes: FlowNodeBase[] = nodes.map((n) => ({
       id: n.id,
       type: n.type as FlowNodeType,
@@ -79,8 +128,6 @@ export default function Toolbar() {
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
-
-    markClean()
   }
 
   const handleLoad = () => {
@@ -179,18 +226,31 @@ export default function Toolbar() {
           type="button"
           onClick={handleLoad}
           className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+          title="Import flow from JSON file"
         >
           <Upload className="w-4 h-4" />
-          Load
+          Import
+        </button>
+
+        <button
+          type="button"
+          onClick={handleExport}
+          className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+          title="Export flow to JSON file"
+        >
+          <Download className="w-4 h-4" />
+          Export
         </button>
 
         <button
           type="button"
           onClick={handleSave}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          disabled={isSaving}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
+          title="Save flow to server"
         >
           <Save className="w-4 h-4" />
-          Save
+          {isSaving ? 'Saving...' : 'Save'}
         </button>
 
         <button
