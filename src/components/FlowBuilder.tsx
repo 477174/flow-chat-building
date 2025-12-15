@@ -118,6 +118,8 @@ export default function FlowBuilder() {
                     return '#3b82f6'
                   case 'button':
                     return '#a855f7'
+                  case 'option_list':
+                    return '#6366f1'
                   case 'wait_response':
                     return '#f59e0b'
                   case 'conditional':
@@ -154,6 +156,7 @@ function NodePalette() {
   const nodeItems = [
     { type: 'message', label: 'Message', color: 'bg-blue-500' },
     { type: 'button', label: 'Buttons', color: 'bg-purple-500' },
+    { type: 'option_list', label: 'Option List', color: 'bg-indigo-500' },
     { type: 'wait_response', label: 'Wait Response', color: 'bg-amber-500' },
     { type: 'conditional', label: 'Condition', color: 'bg-teal-500' },
     { type: 'end', label: 'End', color: 'bg-red-500' },

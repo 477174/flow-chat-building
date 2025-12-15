@@ -6,6 +6,7 @@ import {
   FlowConditionOperator,
   type FlowButtonOption,
   type FlowCondition,
+  type FlowListOption,
 } from '@/types/flow'
 
 export default function NodePanel() {
@@ -43,8 +44,8 @@ export default function NodePanel() {
           />
         </div>
 
-        {/* Message content (for message, button, wait_response) */}
-        {(type === 'message' || type === 'button' || type === 'wait_response') && (
+        {/* Message content (for message, button, option_list, wait_response) */}
+        {(type === 'message' || type === 'button' || type === 'option_list' || type === 'wait_response') && (
           <>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -151,6 +152,61 @@ export default function NodePanel() {
             buttons={data.buttons ?? []}
             onChange={(buttons) => updateNodeData(node.id, { buttons })}
           />
+        )}
+
+        {/* Option List (for option_list node) */}
+        {type === 'option_list' && (
+          <>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                List Title
+              </label>
+              <input
+                type="text"
+                value={data.list_title ?? ''}
+                onChange={(e) =>
+                  updateNodeData(node.id, { list_title: e.target.value })
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Select an option"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Button Label
+              </label>
+              <input
+                type="text"
+                value={data.list_button_label ?? ''}
+                onChange={(e) =>
+                  updateNodeData(node.id, { list_button_label: e.target.value })
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Select"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Save Selection As
+              </label>
+              <input
+                type="text"
+                value={data.variable_name ?? ''}
+                onChange={(e) =>
+                  updateNodeData(node.id, { variable_name: e.target.value })
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="variable_name"
+              />
+            </div>
+
+            <OptionsEditor
+              options={data.options ?? []}
+              onChange={(options) => updateNodeData(node.id, { options })}
+            />
+          </>
         )}
 
         {/* Conditions (for conditional node) */}
@@ -328,6 +384,77 @@ function ConditionsEditor({
         >
           <Plus className="w-4 h-4" />
           Add Condition
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function OptionsEditor({
+  options,
+  onChange,
+}: {
+  options: FlowListOption[]
+  onChange: (options: FlowListOption[]) => void
+}) {
+  const addOption = () => {
+    onChange([
+      ...options,
+      { id: uuid(), title: `Option ${options.length + 1}`, description: '' },
+    ])
+  }
+
+  const updateOption = (id: string, updates: Partial<FlowListOption>) => {
+    onChange(options.map((o) => (o.id === id ? { ...o, ...updates } : o)))
+  }
+
+  const removeOption = (id: string) => {
+    onChange(options.filter((o) => o.id !== id))
+  }
+
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-2">
+        Options
+      </label>
+      <div className="space-y-2">
+        {options.map((option) => (
+          <div
+            key={option.id}
+            className="p-2 bg-gray-50 rounded-lg space-y-2"
+          >
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={option.title}
+                onChange={(e) => updateOption(option.id, { title: e.target.value })}
+                className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                placeholder="Option title"
+              />
+              <button
+                type="button"
+                onClick={() => removeOption(option.id)}
+                className="p-1 text-red-500 hover:bg-red-50 rounded"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <input
+              type="text"
+              value={option.description ?? ''}
+              onChange={(e) => updateOption(option.id, { description: e.target.value })}
+              className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+              placeholder="Description (optional)"
+            />
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={addOption}
+          className="flex items-center justify-center gap-1 w-full px-3 py-2 text-sm text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100"
+        >
+          <Plus className="w-4 h-4" />
+          Add Option
         </button>
       </div>
     </div>

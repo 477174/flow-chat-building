@@ -290,6 +290,8 @@ function getDefaultLabel(type: (typeof FlowNodeType)[keyof typeof FlowNodeType])
       return 'Message'
     case FlowNodeType.BUTTON:
       return 'Buttons'
+    case FlowNodeType.OPTION_LIST:
+      return 'Option List'
     case FlowNodeType.WAIT_RESPONSE:
       return 'Wait Response'
     case FlowNodeType.CONDITIONAL:

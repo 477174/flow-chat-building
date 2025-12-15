@@ -3,6 +3,7 @@ import type { Node, Edge, Viewport } from '@xyflow/react'
 export const FlowNodeType = {
   MESSAGE: 'message',
   BUTTON: 'button',
+  OPTION_LIST: 'option_list',
   WAIT_RESPONSE: 'wait_response',
   CONDITIONAL: 'conditional',
   START: 'start',
@@ -54,6 +55,13 @@ export interface FlowButtonOption {
   next_node_id?: string
 }
 
+export interface FlowListOption {
+  id: string
+  title: string
+  description?: string
+  next_node_id?: string
+}
+
 export interface FlowCondition {
   id: string
   variable: string
@@ -73,6 +81,10 @@ export interface FlowNodeData extends Record<string, unknown> {
   timeout_next_node_id?: string
   variable_name?: string
   default_next_node_id?: string
+  // Option list fields
+  list_title?: string
+  list_button_label?: string
+  options?: FlowListOption[]
 }
 
 export interface FlowNodePosition {
