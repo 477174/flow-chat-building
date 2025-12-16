@@ -70,6 +70,8 @@ export interface FlowCondition {
   next_node_id?: string
 }
 
+export type TimeoutUnit = 'seconds' | 'minutes' | 'hours'
+
 export interface FlowNodeData extends Record<string, unknown> {
   label?: string
   message_type?: FlowMessageType
@@ -77,8 +79,12 @@ export interface FlowNodeData extends Record<string, unknown> {
   media_url?: string
   buttons?: FlowButtonOption[]
   conditions?: FlowCondition[]
-  timeout_seconds?: number
-  timeout_next_node_id?: string
+  // Timeout configuration (for wait_response)
+  timeout_value?: number                    // Display value (e.g., 5)
+  timeout_unit?: TimeoutUnit                // Display unit
+  timeout_seconds?: number                  // Computed total seconds
+  timeout_next_node_id?: string             // Target node on timeout
+  timeout_cancel_on_response?: boolean      // Cancel when user responds (default: true)
   variable_name?: string
   default_next_node_id?: string
   // Option list fields

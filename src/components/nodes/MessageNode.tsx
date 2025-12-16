@@ -12,9 +12,127 @@ const messageTypeIcons: Record<FlowMessageType, typeof MessageSquare> = {
   document: FileText,
 }
 
+/**
+ * Extract Google Drive file ID from various URL formats
+ */
+const getGoogleDriveFileId = (url: string): string | null => {
+  // Format: https://drive.google.com/file/d/{FILE_ID}/...
+  const fileMatch = url.match(/drive\.google\.com\/file\/d\/([^/]+)/)
+  if (fileMatch) return fileMatch[1]
+
+  // Format: https://drive.google.com/uc?export=download&id={FILE_ID}
+  const ucMatch = url.match(/drive\.google\.com\/uc\?.*id=([^&]+)/)
+  if (ucMatch) return ucMatch[1]
+
+  // Format: https://drive.google.com/open?id={FILE_ID}
+  const openMatch = url.match(/drive\.google\.com\/open\?id=([^&]+)/)
+  if (openMatch) return openMatch[1]
+
+  return null
+}
+
+/**
+ * Convert Google Drive URL to embeddable preview URL
+ * Returns null if not a Google Drive URL
+ */
+const getGoogleDriveEmbedUrl = (url: string): string | null => {
+  const fileId = getGoogleDriveFileId(url)
+  if (!fileId) return null
+  return `https://drive.google.com/file/d/${fileId}/preview`
+}
+
 function MessageNode({ data, selected }: NodeProps<CustomNode>) {
-  const Icon = messageTypeIcons[(data.message_type as FlowMessageType) ?? 'text']
+  const messageType = (data.message_type as FlowMessageType) ?? 'text'
+  const Icon = messageTypeIcons[messageType]
   const content = (data.content as string) || ''
+  const mediaUrl = (data.media_url as string) || ''
+
+  const renderMediaPreview = () => {
+    if (!mediaUrl) return null
+
+    // Check if it's a Google Drive URL - use iframe embed if so
+    const googleDriveEmbedUrl = getGoogleDriveEmbedUrl(mediaUrl)
+
+    switch (messageType) {
+      case 'image':
+        if (googleDriveEmbedUrl) {
+          return (
+            <div className="px-2 pb-2">
+              <iframe
+                src={googleDriveEmbedUrl}
+                className="w-full aspect-square rounded border border-gray-200"
+                allow="autoplay"
+                title="Image preview"
+              />
+            </div>
+          )
+        }
+        return (
+          <div className="px-2 pb-2">
+            <img
+              src={mediaUrl}
+              alt="Preview"
+              className="w-full h-auto rounded border border-gray-200"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none'
+              }}
+            />
+          </div>
+        )
+      case 'audio':
+        if (googleDriveEmbedUrl) {
+          return (
+            <div className="px-2 pb-2">
+              <iframe
+                src={googleDriveEmbedUrl}
+                className="w-full h-14 rounded border border-gray-200"
+                allow="autoplay"
+                title="Audio preview"
+              />
+            </div>
+          )
+        }
+        return (
+          <div className="px-2 pb-2">
+            <audio
+              src={mediaUrl}
+              controls
+              className="w-full h-8"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none'
+              }}
+            />
+          </div>
+        )
+      case 'video':
+        if (googleDriveEmbedUrl) {
+          return (
+            <div className="px-2 pb-2">
+              <iframe
+                src={googleDriveEmbedUrl}
+                className="w-full aspect-video rounded border border-gray-200"
+                allow="autoplay"
+                title="Video preview"
+              />
+            </div>
+          )
+        }
+        return (
+          <div className="px-2 pb-2">
+            <video
+              src={mediaUrl}
+              controls
+              className="w-full h-auto rounded border border-gray-200"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none'
+              }}
+            />
+          </div>
+        )
+      default:
+        return null
+    }
+  }
 
   return (
     <div
@@ -36,11 +154,15 @@ function MessageNode({ data, selected }: NodeProps<CustomNode>) {
         </span>
       </div>
 
-      <div className="px-3 py-2">
-        <div className="text-sm text-gray-600">
-          <VariableTextDisplay value={content} />
+      {content && (
+        <div className="px-3 py-2">
+          <div className="text-sm text-gray-600">
+            <VariableTextDisplay value={content} />
+          </div>
         </div>
-      </div>
+      )}
+
+      {renderMediaPreview()}
 
       <Handle
         type="source"
