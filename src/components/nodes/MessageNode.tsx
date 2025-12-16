@@ -47,6 +47,9 @@ function MessageNode({ data, selected }: NodeProps<CustomNode>) {
   const content = (data.content as string) || ''
   const mediaUrl = (data.media_url as string) || ''
 
+  // Use wider node for media content
+  const hasMedia = mediaUrl && (messageType === 'video' || messageType === 'image' || messageType === 'audio')
+
   const renderMediaPreview = () => {
     if (!mediaUrl) return null
 
@@ -61,7 +64,8 @@ function MessageNode({ data, selected }: NodeProps<CustomNode>) {
               <iframe
                 src={googleDriveEmbedUrl}
                 className="w-full aspect-square rounded border border-gray-200"
-                allow="autoplay"
+                allow="autoplay; fullscreen"
+                allowFullScreen
                 title="Image preview"
               />
             </div>
@@ -69,14 +73,16 @@ function MessageNode({ data, selected }: NodeProps<CustomNode>) {
         }
         return (
           <div className="px-2 pb-2">
-            <img
-              src={mediaUrl}
-              alt="Preview"
-              className="w-full h-auto rounded border border-gray-200"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none'
-              }}
-            />
+            <div className="w-full aspect-square rounded border border-gray-200 overflow-hidden bg-gray-100 flex items-center justify-center">
+              <img
+                src={mediaUrl}
+                alt="Preview"
+                className="max-w-full max-h-full object-contain"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none'
+                }}
+              />
+            </div>
           </div>
         )
       case 'audio':
@@ -85,7 +91,7 @@ function MessageNode({ data, selected }: NodeProps<CustomNode>) {
             <div className="px-2 pb-2">
               <iframe
                 src={googleDriveEmbedUrl}
-                className="w-full h-14 rounded border border-gray-200"
+                className="w-full h-20 rounded border border-gray-200"
                 allow="autoplay"
                 title="Audio preview"
               />
@@ -97,7 +103,7 @@ function MessageNode({ data, selected }: NodeProps<CustomNode>) {
             <audio
               src={mediaUrl}
               controls
-              className="w-full h-8"
+              className="w-full"
               onError={(e) => {
                 e.currentTarget.style.display = 'none'
               }}
@@ -110,8 +116,9 @@ function MessageNode({ data, selected }: NodeProps<CustomNode>) {
             <div className="px-2 pb-2">
               <iframe
                 src={googleDriveEmbedUrl}
-                className="w-full aspect-video rounded border border-gray-200"
-                allow="autoplay"
+                className="w-full aspect-square rounded border border-gray-200"
+                allow="autoplay; fullscreen"
+                allowFullScreen
                 title="Video preview"
               />
             </div>
@@ -119,14 +126,16 @@ function MessageNode({ data, selected }: NodeProps<CustomNode>) {
         }
         return (
           <div className="px-2 pb-2">
-            <video
-              src={mediaUrl}
-              controls
-              className="w-full h-auto rounded border border-gray-200"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none'
-              }}
-            />
+            <div className="w-full aspect-square rounded border border-gray-200 overflow-hidden bg-gray-100 flex items-center justify-center">
+              <video
+                src={mediaUrl}
+                controls
+                className="max-w-full max-h-full object-contain"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none'
+                }}
+              />
+            </div>
           </div>
         )
       default:
@@ -137,7 +146,8 @@ function MessageNode({ data, selected }: NodeProps<CustomNode>) {
   return (
     <div
       className={`
-        min-w-[200px] max-w-[280px] rounded-lg shadow-md bg-white border-2
+        rounded-lg shadow-md bg-white border-2
+        ${hasMedia ? 'min-w-[400px] max-w-[480px]' : 'min-w-[200px] max-w-[280px]'}
         ${selected ? 'border-blue-500' : 'border-gray-200'}
       `}
     >
