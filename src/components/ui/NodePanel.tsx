@@ -1,4 +1,5 @@
-import { X, Trash2, Plus } from 'lucide-react'
+import { X, Trash2, Plus, ChevronDown, ChevronRight } from 'lucide-react'
+import { useState } from 'react'
 import { v4 as uuid } from 'uuid'
 import { useFlowStore } from '@/stores/flowStore'
 import {
@@ -8,12 +9,19 @@ import {
   type FlowCondition,
   type FlowListOption,
 } from '@/types/flow'
+import { useAvailableVariables } from '@/hooks/useAvailableVariables'
+import VariableTextEditor from './VariableTextEditor'
+import VariablePalette from './VariablePalette'
+import VariablePanel from './VariablePanel'
 
 export default function NodePanel() {
   const { nodes, selectedNodeId, updateNodeData, deleteNode, togglePanel } =
     useFlowStore()
+  const [showVariablePanel, setShowVariablePanel] = useState(false)
 
   const node = nodes.find((n) => n.id === selectedNodeId)
+  const availableVariables = useAvailableVariables(selectedNodeId)
+
   if (!node) return null
 
   const { data, type } = node
@@ -51,18 +59,19 @@ export default function NodePanel() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Message Content
               </label>
-              <textarea
+              <VariableTextEditor
                 value={data.content ?? ''}
-                onChange={(e) =>
-                  updateNodeData(node.id, { content: e.target.value })
-                }
-                rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                onChange={(content) => updateNodeData(node.id, { content })}
+                availableVariables={availableVariables}
                 placeholder="Enter your message..."
+                rows={4}
               />
-              <p className="text-xs text-gray-500 mt-1">
-                Use {'{{variable}}'} for dynamic content
-              </p>
+              {availableVariables.length > 0 && (
+                <VariablePalette
+                  variables={availableVariables}
+                  className="mt-2"
+                />
+              )}
             </div>
 
             {type === 'message' && (
@@ -226,6 +235,30 @@ export default function NodePanel() {
             <Trash2 className="w-4 h-4" />
             Delete Node
           </button>
+        )}
+
+        {/* Variable Transforms Section */}
+        {availableVariables.length > 0 && (
+          <div className="border-t border-gray-200 pt-4">
+            <button
+              type="button"
+              onClick={() => setShowVariablePanel(!showVariablePanel)}
+              className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 mb-3"
+            >
+              {showVariablePanel ? (
+                <ChevronDown className="w-4 h-4" />
+              ) : (
+                <ChevronRight className="w-4 h-4" />
+              )}
+              Variable Transforms
+            </button>
+            {showVariablePanel && (
+              <VariablePanel
+                availableVariables={availableVariables}
+                nodeId={selectedNodeId}
+              />
+            )}
+          </div>
         )}
       </div>
     </div>

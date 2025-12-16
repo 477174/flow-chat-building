@@ -186,7 +186,7 @@ function processNode(
 export function createLocalSimulation(
   simulationId: string,
   nodes: FlowNode[],
-  edges: Edge[]
+  _edges: Edge[]
 ): SimulationState {
   const startNode = nodes.find((n) => n.type === FlowNodeType.START)
 
@@ -217,12 +217,13 @@ export function startLocalSimulation(
 
   processNode(state, nodes, edges)
 
+  const currentStatus = state.status as typeof FlowSimulationStatus[keyof typeof FlowSimulationStatus]
   return {
     simulation_id: simulationId,
-    status: state.status,
+    status: currentStatus,
     current_node_id: state.currentNodeId ?? undefined,
     messages: state.messages,
-    waiting_for_input: state.status === FlowSimulationStatus.WAITING_INPUT,
+    waiting_for_input: currentStatus === FlowSimulationStatus.WAITING_INPUT,
     variables: state.variables,
   }
 }
@@ -315,12 +316,13 @@ export function processLocalInput(
     state.status = FlowSimulationStatus.COMPLETED
   }
 
+  const finalStatus = state.status as typeof FlowSimulationStatus[keyof typeof FlowSimulationStatus]
   return {
     simulation_id: simulationId,
-    status: state.status,
+    status: finalStatus,
     current_node_id: state.currentNodeId ?? undefined,
     messages: newMessages,
-    waiting_for_input: state.status === FlowSimulationStatus.WAITING_INPUT,
+    waiting_for_input: finalStatus === FlowSimulationStatus.WAITING_INPUT,
     variables: state.variables,
   }
 }

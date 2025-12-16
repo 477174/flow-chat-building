@@ -16,6 +16,8 @@ import {
   type FlowNodeData,
   type FlowTemplate,
   type FlowSimulationMessage,
+  type VariableTransform,
+  type VariableTransformScope,
 } from '@/types/flow'
 
 type FlowNode = Node<FlowNodeData, string>
@@ -46,6 +48,9 @@ interface FlowState {
   // UI state
   selectedNodeId: string | null
   isPanelOpen: boolean
+
+  // Variable transforms
+  variableTransforms: VariableTransformScope
 
   // Actions
   setNodes: (nodes: FlowNode[]) => void
@@ -81,6 +86,15 @@ interface FlowState {
     variables: Record<string, unknown>
   }) => void
   endSimulation: () => void
+
+  // Variable transform actions
+  addGlobalTransform: (transform: VariableTransform) => void
+  updateGlobalTransform: (transformId: string, transform: Partial<VariableTransform>) => void
+  removeGlobalTransform: (transformId: string) => void
+  addNodeTransform: (nodeId: string, transform: VariableTransform) => void
+  updateNodeTransform: (nodeId: string, transformId: string, transform: Partial<VariableTransform>) => void
+  removeNodeTransform: (nodeId: string, transformId: string) => void
+  setVariableTransforms: (transforms: VariableTransformScope) => void
 }
 
 const initialNodes: FlowNode[] = [
@@ -117,6 +131,11 @@ export const useFlowStore = create<FlowState>((set) => ({
 
   selectedNodeId: null,
   isPanelOpen: false,
+
+  variableTransforms: {
+    global: [],
+    byNode: {},
+  },
 
   // Node/Edge actions
   setNodes: (nodes) => set({ nodes, isDirty: true }),
@@ -242,6 +261,7 @@ export const useFlowStore = create<FlowState>((set) => ({
       isDirty: false,
       selectedNodeId: null,
       isPanelOpen: false,
+      variableTransforms: { global: [], byNode: {} },
     }),
 
   setFlowMeta: (meta) =>
@@ -282,6 +302,82 @@ export const useFlowStore = create<FlowState>((set) => ({
       isSimulating: false,
       simulationId: null,
       waitingForInput: false,
+    }),
+
+  // Variable transform actions
+  addGlobalTransform: (transform) =>
+    set((state) => ({
+      variableTransforms: {
+        ...state.variableTransforms,
+        global: [...state.variableTransforms.global, transform],
+      },
+      isDirty: true,
+    })),
+
+  updateGlobalTransform: (transformId, updates) =>
+    set((state) => ({
+      variableTransforms: {
+        ...state.variableTransforms,
+        global: state.variableTransforms.global.map((t) =>
+          t.id === transformId ? { ...t, ...updates } : t
+        ),
+      },
+      isDirty: true,
+    })),
+
+  removeGlobalTransform: (transformId) =>
+    set((state) => ({
+      variableTransforms: {
+        ...state.variableTransforms,
+        global: state.variableTransforms.global.filter((t) => t.id !== transformId),
+      },
+      isDirty: true,
+    })),
+
+  addNodeTransform: (nodeId, transform) =>
+    set((state) => ({
+      variableTransforms: {
+        ...state.variableTransforms,
+        byNode: {
+          ...state.variableTransforms.byNode,
+          [nodeId]: [...(state.variableTransforms.byNode[nodeId] ?? []), transform],
+        },
+      },
+      isDirty: true,
+    })),
+
+  updateNodeTransform: (nodeId, transformId, updates) =>
+    set((state) => ({
+      variableTransforms: {
+        ...state.variableTransforms,
+        byNode: {
+          ...state.variableTransforms.byNode,
+          [nodeId]: (state.variableTransforms.byNode[nodeId] ?? []).map((t) =>
+            t.id === transformId ? { ...t, ...updates } : t
+          ),
+        },
+      },
+      isDirty: true,
+    })),
+
+  removeNodeTransform: (nodeId, transformId) =>
+    set((state) => ({
+      variableTransforms: {
+        ...state.variableTransforms,
+        byNode: {
+          ...state.variableTransforms.byNode,
+          [nodeId]: (state.variableTransforms.byNode[nodeId] ?? []).filter(
+            (t) => t.id !== transformId
+          ),
+        },
+      },
+      isDirty: true,
+    })),
+
+  setVariableTransforms: (transforms) =>
+    set({
+      variableTransforms: transforms,
+      isDirty: true,
     }),
 }))
 

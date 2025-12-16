@@ -187,6 +187,37 @@ export interface FlowSimulationResponse {
   variables: Record<string, unknown>
 }
 
+// Variable Transform Types
+export const VariableTransformOperator = {
+  EQUALS: 'equals',
+  CONTAINS: 'contains',
+  STARTS_WITH: 'starts_with',
+  ENDS_WITH: 'ends_with',
+  REGEX: 'regex',
+} as const
+
+export type VariableTransformOperator =
+  (typeof VariableTransformOperator)[keyof typeof VariableTransformOperator]
+
+export interface VariableTransformCondition {
+  id: string
+  operator: VariableTransformOperator
+  value: string
+  displayValue: string // What to show when condition matches
+}
+
+export interface VariableTransform {
+  id: string
+  variableName: string
+  conditions: VariableTransformCondition[]
+  defaultValue?: string // Fallback if no condition matches
+}
+
+export interface VariableTransformScope {
+  global: VariableTransform[] // Apply everywhere
+  byNode: Record<string, VariableTransform[]> // Scoped to specific nodes
+}
+
 // React Flow compatible types
 export type CustomNode = Node<FlowNodeData, FlowNodeType>
 export type CustomEdge = Edge
