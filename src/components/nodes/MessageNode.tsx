@@ -37,7 +37,7 @@ function MessageNode({ data, selected }: NodeProps<CustomNode>) {
       </div>
 
       <div className="px-3 py-2">
-        <div className="text-sm text-gray-600 line-clamp-2">
+        <div className="text-sm text-gray-600">
           <VariableTextDisplay value={content} />
         </div>
       </div>
