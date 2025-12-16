@@ -247,7 +247,6 @@ export default function NodePanel() {
             conditions={data.conditions ?? []}
             onChange={(conditions) => updateNodeData(node.id, { conditions })}
             availableVariables={availableVariables}
-            nodes={nodes}
           />
         )}
 
@@ -354,54 +353,29 @@ function ConditionsEditor({
   conditions,
   onChange,
   availableVariables,
-  nodes,
 }: {
   conditions: FlowCondition[]
   onChange: (conditions: FlowCondition[]) => void
   availableVariables: AvailableVariable[]
-  nodes: Array<{ id: string; type?: string; data: Record<string, unknown> }>
 }) {
-  // Convert available variables to combobox options
+  // Convert available variables to combobox options (show label, store name)
   const variableOptions: ComboboxOption[] = useMemo(() => {
     return availableVariables.map((v) => ({
       value: v.name,
-      label: v.name,
+      label: v.sourceNodeLabel,
     }))
   }, [availableVariables])
 
-  // Collect value suggestions from buttons/options in the flow
-  const valueSuggestions: ComboboxOption[] = useMemo(() => {
-    const suggestions: ComboboxOption[] = []
-    const seen = new Set<string>()
+  // Get value suggestions for a specific variable based on its possibleValues
+  const getValueSuggestionsForVariable = (variableName: string): ComboboxOption[] => {
+    const variable = availableVariables.find((v) => v.name === variableName)
+    if (!variable || !variable.possibleValues) return []
 
-    for (const node of nodes) {
-      // Collect button values
-      const buttons = node.data.buttons as FlowButtonOption[] | undefined
-      if (buttons) {
-        for (const btn of buttons) {
-          const val = btn.value || btn.label
-          if (val && !seen.has(val)) {
-            seen.add(val)
-            suggestions.push({ value: val, label: btn.label })
-          }
-        }
-      }
-
-      // Collect list option values
-      const options = node.data.options as FlowListOption[] | undefined
-      if (options) {
-        for (const opt of options) {
-          const val = opt.title
-          if (val && !seen.has(val)) {
-            seen.add(val)
-            suggestions.push({ value: val, label: opt.title })
-          }
-        }
-      }
-    }
-
-    return suggestions
-  }, [nodes])
+    return variable.possibleValues.map((pv) => ({
+      value: pv.label,
+      label: pv.label,
+    }))
+  }
 
   const addCondition = () => {
     onChange([
@@ -434,7 +408,13 @@ function ConditionsEditor({
             <div className="flex items-center gap-2">
               <ComboboxInput
                 value={condition.variable}
-                onChange={(value) => updateCondition(condition.id, { variable: value })}
+                onChange={(value) => {
+                  const variable = availableVariables.find((v) => v.name === value)
+                  updateCondition(condition.id, {
+                    variable: value,
+                    variableLabel: variable?.sourceNodeLabel || value,
+                  })
+                }}
                 options={variableOptions}
                 placeholder="Variable"
                 className="flex-1 min-w-0"
@@ -470,7 +450,7 @@ function ConditionsEditor({
                 <ComboboxInput
                   value={condition.value ?? ''}
                   onChange={(value) => updateCondition(condition.id, { value })}
-                  options={valueSuggestions}
+                  options={getValueSuggestionsForVariable(condition.variable)}
                   placeholder="Value"
                   className="flex-1 min-w-0"
                 />

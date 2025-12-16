@@ -35,9 +35,9 @@ function ConditionalNode({ data, selected }: NodeProps<CustomNode>) {
 						>
 							<span
 								className="text-teal-800 font-mono truncate block w-full pr-2"
-								title={`${condition.variable} ${condition.operator} ${condition.value ?? ""}`}
+								title={`${condition.variableLabel || condition.variable} ${condition.operator} ${condition.value ?? ""}`}
 							>
-								{condition.variable} {condition.operator}{" "}
+								{condition.variableLabel || condition.variable} {condition.operator}{" "}
 								{condition.value ?? ""}
 							</span>
 							<Handle

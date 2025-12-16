@@ -65,6 +65,7 @@ export interface FlowListOption {
 export interface FlowCondition {
   id: string
   variable: string
+  variableLabel?: string
   operator: FlowConditionOperator
   value?: string
   next_node_id?: string

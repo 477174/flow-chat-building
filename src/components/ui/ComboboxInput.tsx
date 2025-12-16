@@ -22,13 +22,19 @@ export default function ComboboxInput({
   className = '',
 }: ComboboxInputProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const [search, setSearch] = useState(value)
+  const [search, setSearch] = useState('')
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
+  // Get the display label for the current value
+  const getDisplayLabel = (val: string) => {
+    const option = options.find((opt) => opt.value === val)
+    return option ? option.label : val
+  }
+
   useEffect(() => {
-    setSearch(value)
-  }, [value])
+    setSearch(getDisplayLabel(value))
+  }, [value, options])
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -53,10 +59,9 @@ export default function ComboboxInput({
   }
 
   const handleSelect = (option: ComboboxOption) => {
-    setSearch(option.value)
+    setSearch(option.label)
     onChange(option.value)
     setIsOpen(false)
-    inputRef.current?.focus()
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -100,10 +105,7 @@ export default function ComboboxInput({
                 option.value === value ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
               }`}
             >
-              <span className="font-medium">{option.label}</span>
-              {option.label !== option.value && (
-                <span className="text-gray-400 ml-1">({option.value})</span>
-              )}
+              {option.label}
             </button>
           ))}
         </div>
