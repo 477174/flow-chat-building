@@ -12,7 +12,6 @@ import {
 } from '@/types/flow'
 import { useAvailableVariables, type AvailableVariable } from '@/hooks/useAvailableVariables'
 import VariableTextEditor from './VariableTextEditor'
-import VariablePalette from './VariablePalette'
 import VariablePanel from './VariablePanel'
 import ComboboxInput, { type ComboboxOption } from './ComboboxInput'
 
@@ -68,12 +67,6 @@ export default function NodePanel() {
                 placeholder="Enter your message..."
                 rows={4}
               />
-              {availableVariables.length > 0 && (
-                <VariablePalette
-                  variables={availableVariables}
-                  className="mt-2"
-                />
-              )}
             </div>
 
             {type === 'message' && (
