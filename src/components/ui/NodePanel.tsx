@@ -1,5 +1,5 @@
 import { X, Trash2, Plus, ChevronDown, ChevronRight } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { v4 as uuid } from 'uuid'
 import { useFlowStore } from '@/stores/flowStore'
 import {
@@ -8,11 +8,13 @@ import {
   type FlowButtonOption,
   type FlowCondition,
   type FlowListOption,
+  type TimeoutUnit,
 } from '@/types/flow'
-import { useAvailableVariables } from '@/hooks/useAvailableVariables'
+import { useAvailableVariables, type AvailableVariable } from '@/hooks/useAvailableVariables'
 import VariableTextEditor from './VariableTextEditor'
 import VariablePalette from './VariablePalette'
 import VariablePanel from './VariablePanel'
+import ComboboxInput, { type ComboboxOption } from './ComboboxInput'
 
 export default function NodePanel() {
   const { nodes, selectedNodeId, updateNodeData, deleteNode, togglePanel } =
@@ -52,8 +54,8 @@ export default function NodePanel() {
           />
         </div>
 
-        {/* Message content (for message, button, option_list, wait_response) */}
-        {(type === 'message' || type === 'button' || type === 'option_list' || type === 'wait_response') && (
+        {/* Message content (for message, button, option_list) */}
+        {(type === 'message' || type === 'button' || type === 'option_list') && (
           <>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -116,41 +118,69 @@ export default function NodePanel() {
           </>
         )}
 
-        {/* Variable name (for wait_response) */}
+        {/* Timeout Configuration (for wait_response) */}
         {type === 'wait_response' && (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Save Response As
-              </label>
-              <input
-                type="text"
-                value={data.variable_name ?? ''}
-                onChange={(e) =>
-                  updateNodeData(node.id, { variable_name: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="variable_name"
-              />
-            </div>
+              <h4 className="text-sm font-medium text-gray-700 mb-3">Timeout Settings</h4>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Timeout (seconds)
+              {/* Duration + Unit */}
+              <div className="flex gap-2 mb-3">
+                <div className="flex-1">
+                  <label className="block text-xs text-gray-500 mb-1">Duration</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={data.timeout_value ?? ''}
+                    onChange={(e) => {
+                      const value = e.target.value ? parseInt(e.target.value) : undefined
+                      const unit = (data.timeout_unit as TimeoutUnit) ?? 'minutes'
+                      updateNodeData(node.id, {
+                        timeout_value: value,
+                        timeout_seconds: value ? convertToSeconds(value, unit) : undefined,
+                      })
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                    placeholder="5"
+                  />
+                </div>
+                <div className="w-28">
+                  <label className="block text-xs text-gray-500 mb-1">Unit</label>
+                  <select
+                    value={data.timeout_unit ?? 'minutes'}
+                    onChange={(e) => {
+                      const unit = e.target.value as TimeoutUnit
+                      const value = data.timeout_value as number | undefined
+                      updateNodeData(node.id, {
+                        timeout_unit: unit,
+                        timeout_seconds: value ? convertToSeconds(value, unit) : undefined,
+                      })
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                  >
+                    <option value="seconds">Seconds</option>
+                    <option value="minutes">Minutes</option>
+                    <option value="hours">Hours</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Cancel on Response Checkbox */}
+              <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={data.timeout_cancel_on_response !== false}
+                  onChange={(e) => updateNodeData(node.id, { timeout_cancel_on_response: e.target.checked })}
+                  className="rounded border-gray-300 text-amber-500 focus:ring-amber-500"
+                />
+                Cancel timeout if user responds
               </label>
-              <input
-                type="number"
-                value={data.timeout_seconds ?? ''}
-                onChange={(e) =>
-                  updateNodeData(node.id, {
-                    timeout_seconds: e.target.value
-                      ? parseInt(e.target.value)
-                      : undefined,
-                  })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="300"
-              />
+
+              {data.timeout_value && (
+                <p className="mt-2 text-xs text-amber-600 bg-amber-50 p-2 rounded">
+                  Connect this node to where the flow should go after {data.timeout_value as number} {(data.timeout_unit as string) || 'minutes'} without user response.
+                </p>
+              )}
             </div>
           </>
         )}
@@ -223,6 +253,8 @@ export default function NodePanel() {
           <ConditionsEditor
             conditions={data.conditions ?? []}
             onChange={(conditions) => updateNodeData(node.id, { conditions })}
+            availableVariables={availableVariables}
+            nodes={nodes}
           />
         )}
 
@@ -328,10 +360,56 @@ function ButtonsEditor({
 function ConditionsEditor({
   conditions,
   onChange,
+  availableVariables,
+  nodes,
 }: {
   conditions: FlowCondition[]
   onChange: (conditions: FlowCondition[]) => void
+  availableVariables: AvailableVariable[]
+  nodes: Array<{ id: string; type?: string; data: Record<string, unknown> }>
 }) {
+  // Convert available variables to combobox options
+  const variableOptions: ComboboxOption[] = useMemo(() => {
+    return availableVariables.map((v) => ({
+      value: v.name,
+      label: v.name,
+    }))
+  }, [availableVariables])
+
+  // Collect value suggestions from buttons/options in the flow
+  const valueSuggestions: ComboboxOption[] = useMemo(() => {
+    const suggestions: ComboboxOption[] = []
+    const seen = new Set<string>()
+
+    for (const node of nodes) {
+      // Collect button values
+      const buttons = node.data.buttons as FlowButtonOption[] | undefined
+      if (buttons) {
+        for (const btn of buttons) {
+          const val = btn.value || btn.label
+          if (val && !seen.has(val)) {
+            seen.add(val)
+            suggestions.push({ value: val, label: btn.label })
+          }
+        }
+      }
+
+      // Collect list option values
+      const options = node.data.options as FlowListOption[] | undefined
+      if (options) {
+        for (const opt of options) {
+          const val = opt.title
+          if (val && !seen.has(val)) {
+            seen.add(val)
+            suggestions.push({ value: val, label: opt.title })
+          }
+        }
+      }
+    }
+
+    return suggestions
+  }, [nodes])
+
   const addCondition = () => {
     onChange([
       ...conditions,
@@ -361,18 +439,16 @@ function ConditionsEditor({
         {conditions.map((condition) => (
           <div key={condition.id} className="p-2 bg-gray-50 rounded-lg space-y-2">
             <div className="flex items-center gap-2">
-              <input
-                type="text"
+              <ComboboxInput
                 value={condition.variable}
-                onChange={(e) =>
-                  updateCondition(condition.id, { variable: e.target.value })
-                }
-                className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                onChange={(value) => updateCondition(condition.id, { variable: value })}
+                options={variableOptions}
                 placeholder="Variable"
+                className="flex-1 min-w-0"
               />
               <button
                 onClick={() => removeCondition(condition.id)}
-                className="p-1 text-red-500 hover:bg-red-50 rounded"
+                className="p-1 text-red-500 hover:bg-red-50 rounded flex-shrink-0"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -385,27 +461,25 @@ function ConditionsEditor({
                     operator: e.target.value as FlowConditionOperator,
                   })
                 }
-                className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                className="w-24 flex-shrink-0 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
               >
-                <option value="equals">Equals</option>
-                <option value="not_equals">Not Equals</option>
-                <option value="contains">Contains</option>
-                <option value="not_contains">Not Contains</option>
-                <option value="starts_with">Starts With</option>
-                <option value="ends_with">Ends With</option>
-                <option value="exists">Exists</option>
-                <option value="not_exists">Not Exists</option>
-                <option value="regex">Regex</option>
+                <option value="equals">=</option>
+                <option value="not_equals">!=</option>
+                <option value="contains">contains</option>
+                <option value="not_contains">!contains</option>
+                <option value="starts_with">starts</option>
+                <option value="ends_with">ends</option>
+                <option value="exists">exists</option>
+                <option value="not_exists">!exists</option>
+                <option value="regex">regex</option>
               </select>
               {!['exists', 'not_exists'].includes(condition.operator) && (
-                <input
-                  type="text"
+                <ComboboxInput
                   value={condition.value ?? ''}
-                  onChange={(e) =>
-                    updateCondition(condition.id, { value: e.target.value })
-                  }
-                  className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                  onChange={(value) => updateCondition(condition.id, { value })}
+                  options={valueSuggestions}
                   placeholder="Value"
+                  className="flex-1 min-w-0"
                 />
               )}
             </div>
@@ -492,4 +566,18 @@ function OptionsEditor({
       </div>
     </div>
   )
+}
+
+/**
+ * Convert timeout value to seconds based on unit
+ */
+function convertToSeconds(value: number, unit: TimeoutUnit): number {
+  switch (unit) {
+    case 'minutes':
+      return value * 60
+    case 'hours':
+      return value * 3600
+    default:
+      return value
+  }
 }

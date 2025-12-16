@@ -26,14 +26,14 @@ function ConditionalNode({ data, selected }: NodeProps<CustomNode>) {
         </span>
       </div>
 
-      <div className="p-2 space-y-1">
+      <div className="p-2 space-y-1 overflow-hidden">
         {conditions.length > 0 ? (
           conditions.map((condition: FlowCondition, index: number) => (
             <div
               key={condition.id}
-              className="relative flex items-center justify-between px-3 py-1.5 bg-teal-50 rounded text-xs"
+              className="relative flex items-center px-3 py-1.5 bg-teal-50 rounded text-xs pr-4"
             >
-              <span className="text-teal-800 font-mono">
+              <span className="text-teal-800 font-mono truncate block w-full" title={`${condition.variable} ${condition.operator} ${condition.value ?? ''}`}>
                 {condition.variable} {condition.operator} {condition.value ?? ''}
               </span>
               <Handle
