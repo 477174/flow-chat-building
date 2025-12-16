@@ -2,9 +2,11 @@ import type { CustomNode, FlowButtonOption } from '@/types/flow'
 import { Handle, Position, type NodeProps } from '@xyflow/react'
 import { LayoutGrid } from 'lucide-react'
 import { memo } from 'react'
+import VariableTextDisplay from '@/components/ui/VariableTextDisplay'
 
 function ButtonNode({ data, selected }: NodeProps<CustomNode>) {
   const buttons = (data.buttons as FlowButtonOption[] | undefined) ?? []
+  const content = (data.content as string) || ''
 
   return (
     <div
@@ -26,9 +28,11 @@ function ButtonNode({ data, selected }: NodeProps<CustomNode>) {
         </span>
       </div>
 
-      {data.content && (
+      {content && (
         <div className="px-3 py-2 border-b border-gray-100">
-          <p className="text-sm text-gray-600 line-clamp-2">{data.content as string}</p>
+          <div className="text-sm text-gray-600 line-clamp-2">
+            <VariableTextDisplay value={content} />
+          </div>
         </div>
       )}
 

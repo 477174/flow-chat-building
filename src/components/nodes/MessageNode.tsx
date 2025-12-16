@@ -2,6 +2,7 @@ import { memo } from 'react'
 import { Handle, Position, type NodeProps } from '@xyflow/react'
 import { MessageSquare, Image, FileAudio, Video, FileText } from 'lucide-react'
 import type { CustomNode, FlowMessageType } from '@/types/flow'
+import VariableTextDisplay from '@/components/ui/VariableTextDisplay'
 
 const messageTypeIcons: Record<FlowMessageType, typeof MessageSquare> = {
   text: MessageSquare,
@@ -13,7 +14,7 @@ const messageTypeIcons: Record<FlowMessageType, typeof MessageSquare> = {
 
 function MessageNode({ data, selected }: NodeProps<CustomNode>) {
   const Icon = messageTypeIcons[(data.message_type as FlowMessageType) ?? 'text']
-  const contentPreview = (data.content as string)?.slice(0, 50) || 'No content'
+  const content = (data.content as string) || ''
 
   return (
     <div
@@ -36,10 +37,9 @@ function MessageNode({ data, selected }: NodeProps<CustomNode>) {
       </div>
 
       <div className="px-3 py-2">
-        <p className="text-sm text-gray-600 line-clamp-2">
-          {contentPreview}
-          {data.content && (data.content as string).length > 50 ? '...' : ''}
-        </p>
+        <div className="text-sm text-gray-600 line-clamp-2">
+          <VariableTextDisplay value={content} />
+        </div>
       </div>
 
       <Handle

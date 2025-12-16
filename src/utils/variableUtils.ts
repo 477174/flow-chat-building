@@ -171,7 +171,7 @@ export function collectAvailableVariables(
  * @returns Array of variable names found
  */
 export function parseVariableNames(text: string): string[] {
-  const regex = /\{\{(\w+)\}\}/g
+  const regex = /\{\{([\w-]+)\}\}/g
   const matches: string[] = []
   let match: RegExpExecArray | null
 
@@ -191,7 +191,7 @@ export function textToSegments(text: string): TextSegment[] {
   if (!text) return []
 
   const segments: TextSegment[] = []
-  const regex = /\{\{(\w+)\}\}/g
+  const regex = /\{\{([\w-]+)\}\}/g
   let lastIndex = 0
   let match: RegExpExecArray | null
 

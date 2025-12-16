@@ -2,8 +2,11 @@ import { memo } from 'react'
 import { Handle, Position, type NodeProps } from '@xyflow/react'
 import { MessageCircle, Clock } from 'lucide-react'
 import type { CustomNode } from '@/types/flow'
+import VariableTextDisplay from '@/components/ui/VariableTextDisplay'
 
 function WaitResponseNode({ data, selected }: NodeProps<CustomNode>) {
+  const content = (data.content as string) || ''
+
   return (
     <div
       className={`
@@ -25,8 +28,10 @@ function WaitResponseNode({ data, selected }: NodeProps<CustomNode>) {
       </div>
 
       <div className="px-3 py-2 space-y-2">
-        {data.content && (
-          <p className="text-sm text-gray-600 line-clamp-2">{data.content as string}</p>
+        {content && (
+          <div className="text-sm text-gray-600 line-clamp-2">
+            <VariableTextDisplay value={content} />
+          </div>
         )}
 
         {data.variable_name && (
