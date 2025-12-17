@@ -2,9 +2,44 @@ import { Handle, type NodeProps, Position } from "@xyflow/react";
 import { GitBranch } from "lucide-react";
 import { memo } from "react";
 import type { CustomNode, FlowCondition } from "@/types/flow";
+import { useFlowStore } from "@/stores/flowStore";
+
+function getOperatorLabel(operator: string): string {
+	switch (operator) {
+		case "equals":
+			return "igual a";
+		case "not_equals":
+			return "diferente de";
+		case "contains":
+			return "contém";
+		case "not_contains":
+			return "não contém";
+		case "starts_with":
+			return "começa com";
+		case "ends_with":
+			return "termina com";
+		case "exists":
+			return "existe";
+		case "not_exists":
+			return "não existe";
+		case "regex":
+			return "regex";
+		default:
+			return operator;
+	}
+}
 
 function ConditionalNode({ data, selected }: NodeProps<CustomNode>) {
 	const conditions = (data.conditions as FlowCondition[] | undefined) ?? [];
+	const nodes = useFlowStore((state) => state.nodes);
+
+	// Look up variable label from nodes if not stored in condition
+	const getVariableLabel = (condition: FlowCondition): string => {
+		if (condition.variableLabel) return condition.variableLabel;
+		// Variable name is the source node ID, look up its label
+		const sourceNode = nodes.find((n) => n.id === condition.variable);
+		return sourceNode?.data.label ?? condition.variable;
+	};
 
 	return (
 		<div
@@ -22,7 +57,7 @@ function ConditionalNode({ data, selected }: NodeProps<CustomNode>) {
 			<div className="flex items-center gap-2 px-3 py-2 bg-teal-50 border-b border-gray-200 rounded-t-lg">
 				<GitBranch className="w-4 h-4 text-teal-600" />
 				<span className="font-medium text-sm text-teal-800">
-					{(data.label as string) || "Condition"}
+					{(data.label as string) || "Condição"}
 				</span>
 			</div>
 
@@ -34,11 +69,14 @@ function ConditionalNode({ data, selected }: NodeProps<CustomNode>) {
 							className="relative flex items-center px-3 py-1.5 bg-teal-50 border border-teal-200 rounded text-xs"
 						>
 							<span
-								className="text-teal-800 font-mono truncate block w-full pr-2"
-								title={`${condition.variableLabel || condition.variable} ${condition.operator} ${condition.value ?? ""}`}
+								className="font-mono truncate block w-full pr-2"
+								title={`${getVariableLabel(condition)} ${getOperatorLabel(condition.operator)} ${condition.value ?? ""}`}
 							>
-								{condition.variableLabel || condition.variable} {condition.operator}{" "}
-								{condition.value ?? ""}
+								<span className="text-blue-600 font-medium">{getVariableLabel(condition)}</span>
+								{" "}
+								<span className="text-teal-600">{getOperatorLabel(condition.operator)}</span>
+								{" "}
+								<span className="text-purple-600 font-medium">{condition.value ?? ""}</span>
 							</span>
 							<Handle
 								type="source"
@@ -50,13 +88,13 @@ function ConditionalNode({ data, selected }: NodeProps<CustomNode>) {
 					))
 				) : (
 					<p className="text-xs text-gray-400 text-center py-1">
-						No conditions added
+						Nenhuma condição adicionada
 					</p>
 				)}
 			</div>
 
 			<div className="px-3 py-1.5 border-t border-gray-100 flex items-center justify-between">
-				<span className="text-xs text-gray-500">Default</span>
+				<span className="text-xs text-gray-500">Padrão</span>
 				<Handle
 					type="source"
 					position={Position.Bottom}

@@ -30,7 +30,7 @@ export default function NodePanel() {
   return (
     <div className="w-80 bg-white border-l border-gray-200 overflow-y-auto">
       <div className="flex items-center justify-between p-4 border-b border-gray-200">
-        <h2 className="font-semibold text-gray-800">Edit Node</h2>
+        <h2 className="font-semibold text-gray-800">Editar Bloco</h2>
         <button
           onClick={() => togglePanel(false)}
           className="p-1 text-gray-400 hover:text-gray-600 rounded"
@@ -43,7 +43,7 @@ export default function NodePanel() {
         {/* Label */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Label
+            Título
           </label>
           <input
             type="text"
@@ -58,13 +58,13 @@ export default function NodePanel() {
           <>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Message Content
+                Conteúdo da Mensagem
               </label>
               <VariableTextEditor
                 value={data.content ?? ''}
                 onChange={(content) => updateNodeData(node.id, { content })}
                 availableVariables={availableVariables}
-                placeholder="Enter your message..."
+                placeholder="Digite sua mensagem..."
                 rows={4}
               />
             </div>
@@ -72,7 +72,7 @@ export default function NodePanel() {
             {type === 'message' && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Message Type
+                  Tipo de Mensagem
                 </label>
                 <select
                   value={data.message_type ?? 'text'}
@@ -83,11 +83,11 @@ export default function NodePanel() {
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="text">Text</option>
-                  <option value="image">Image</option>
-                  <option value="audio">Audio</option>
-                  <option value="video">Video</option>
-                  <option value="document">Document</option>
+                  <option value="text">Texto</option>
+                  <option value="image">Imagem</option>
+                  <option value="audio">Áudio</option>
+                  <option value="video">Vídeo</option>
+                  <option value="document">Documento</option>
                 </select>
               </div>
             )}
@@ -95,7 +95,7 @@ export default function NodePanel() {
             {data.message_type && data.message_type !== 'text' && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Media URL
+                  URL da Mídia
                 </label>
                 <input
                   type="url"
@@ -115,12 +115,12 @@ export default function NodePanel() {
         {type === 'wait_response' && (
           <>
             <div>
-              <h4 className="text-sm font-medium text-gray-700 mb-3">Timeout Settings</h4>
+              <h4 className="text-sm font-medium text-gray-700 mb-3">Configurações de Timeout</h4>
 
               {/* Duration + Unit */}
               <div className="flex gap-2 mb-3">
                 <div className="flex-1">
-                  <label className="block text-xs text-gray-500 mb-1">Duration</label>
+                  <label className="block text-xs text-gray-500 mb-1">Duração</label>
                   <input
                     type="number"
                     min="1"
@@ -138,7 +138,7 @@ export default function NodePanel() {
                   />
                 </div>
                 <div className="w-28">
-                  <label className="block text-xs text-gray-500 mb-1">Unit</label>
+                  <label className="block text-xs text-gray-500 mb-1">Unidade</label>
                   <select
                     value={data.timeout_unit ?? 'minutes'}
                     onChange={(e) => {
@@ -151,9 +151,9 @@ export default function NodePanel() {
                     }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                   >
-                    <option value="seconds">Seconds</option>
-                    <option value="minutes">Minutes</option>
-                    <option value="hours">Hours</option>
+                    <option value="seconds">Segundos</option>
+                    <option value="minutes">Minutos</option>
+                    <option value="hours">Horas</option>
                   </select>
                 </div>
               </div>
@@ -166,12 +166,12 @@ export default function NodePanel() {
                   onChange={(e) => updateNodeData(node.id, { timeout_cancel_on_response: e.target.checked })}
                   className="rounded border-gray-300 text-amber-500 focus:ring-amber-500"
                 />
-                Cancel timeout if user responds
+                Cancelar timeout se o usuário responder
               </label>
 
               {data.timeout_value && (
                 <p className="mt-2 text-xs text-amber-600 bg-amber-50 p-2 rounded">
-                  Connect this node to where the flow should go after {data.timeout_value as number} {(data.timeout_unit as string) || 'minutes'} without user response.
+                  Conecte este bloco ao destino do fluxo após {data.timeout_value as number} {(data.timeout_unit as string) || 'minutos'} sem resposta do usuário.
                 </p>
               )}
             </div>
@@ -191,7 +191,7 @@ export default function NodePanel() {
           <>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                List Title
+                Título da Lista
               </label>
               <input
                 type="text"
@@ -200,13 +200,13 @@ export default function NodePanel() {
                   updateNodeData(node.id, { list_title: e.target.value })
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Select an option"
+                placeholder="Selecione uma opção"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Button Label
+                Texto do Botão
               </label>
               <input
                 type="text"
@@ -215,22 +215,7 @@ export default function NodePanel() {
                   updateNodeData(node.id, { list_button_label: e.target.value })
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Select"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Save Selection As
-              </label>
-              <input
-                type="text"
-                value={data.variable_name ?? ''}
-                onChange={(e) =>
-                  updateNodeData(node.id, { variable_name: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="variable_name"
+                placeholder="Selecionar"
               />
             </div>
 
@@ -257,7 +242,7 @@ export default function NodePanel() {
             className="flex items-center justify-center gap-2 w-full px-4 py-2 text-red-600 bg-red-50 rounded-lg hover:bg-red-100"
           >
             <Trash2 className="w-4 h-4" />
-            Delete Node
+            Excluir Bloco
           </button>
         )}
 
@@ -274,7 +259,7 @@ export default function NodePanel() {
               ) : (
                 <ChevronRight className="w-4 h-4" />
               )}
-              Variable Transforms
+              Transformações de Variáveis
             </button>
             {showVariablePanel && (
               <VariablePanel
@@ -299,7 +284,7 @@ function ButtonsEditor({
   const addButton = () => {
     onChange([
       ...buttons,
-      { id: uuid(), label: `Button ${buttons.length + 1}`, value: '' },
+      { id: uuid(), label: `Botão ${buttons.length + 1}`, description: '' },
     ])
   }
 
@@ -313,36 +298,47 @@ function ButtonsEditor({
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
-        Buttons
-      </label>
+      <span className="block text-sm font-medium text-gray-700 mb-2">
+        Botões
+      </span>
       <div className="space-y-2">
         {buttons.map((button) => (
           <div
             key={button.id}
-            className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg"
+            className="p-2 bg-gray-50 rounded-lg space-y-2"
           >
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={button.label}
+                onChange={(e) => updateButton(button.id, { label: e.target.value })}
+                className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                placeholder="Texto do botão"
+              />
+              <button
+                type="button"
+                onClick={() => removeButton(button.id)}
+                className="p-1 text-red-500 hover:bg-red-50 rounded"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
             <input
               type="text"
-              value={button.label}
-              onChange={(e) => updateButton(button.id, { label: e.target.value })}
-              className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-              placeholder="Button label"
+              value={button.description ?? ''}
+              onChange={(e) => updateButton(button.id, { description: e.target.value })}
+              className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+              placeholder="Descrição (opcional)"
             />
-            <button
-              onClick={() => removeButton(button.id)}
-              className="p-1 text-red-500 hover:bg-red-50 rounded"
-            >
-              <X className="w-4 h-4" />
-            </button>
           </div>
         ))}
         <button
+          type="button"
           onClick={addButton}
           className="flex items-center justify-center gap-1 w-full px-3 py-2 text-sm text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100"
         >
           <Plus className="w-4 h-4" />
-          Add Button
+          Adicionar Botão
         </button>
       </div>
     </div>
@@ -399,9 +395,9 @@ function ConditionsEditor({
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
-        Conditions
-      </label>
+      <span className="block text-sm font-medium text-gray-700 mb-2">
+        Condições
+      </span>
       <div className="space-y-2">
         {conditions.map((condition) => (
           <div key={condition.id} className="p-2 bg-gray-50 rounded-lg space-y-2">
@@ -416,10 +412,11 @@ function ConditionsEditor({
                   })
                 }}
                 options={variableOptions}
-                placeholder="Variable"
+                placeholder="Variável"
                 className="flex-1 min-w-0"
               />
               <button
+                type="button"
                 onClick={() => removeCondition(condition.id)}
                 className="p-1 text-red-500 hover:bg-red-50 rounded flex-shrink-0"
               >
@@ -436,14 +433,14 @@ function ConditionsEditor({
                 }
                 className="w-24 flex-shrink-0 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
               >
-                <option value="equals">=</option>
-                <option value="not_equals">!=</option>
-                <option value="contains">contains</option>
-                <option value="not_contains">!contains</option>
-                <option value="starts_with">starts</option>
-                <option value="ends_with">ends</option>
-                <option value="exists">exists</option>
-                <option value="not_exists">!exists</option>
+                <option value="equals">igual a</option>
+                <option value="not_equals">diferente de</option>
+                <option value="contains">contém</option>
+                <option value="not_contains">não contém</option>
+                <option value="starts_with">começa com</option>
+                <option value="ends_with">termina com</option>
+                <option value="exists">existe</option>
+                <option value="not_exists">não existe</option>
                 <option value="regex">regex</option>
               </select>
               {!['exists', 'not_exists'].includes(condition.operator) && (
@@ -451,7 +448,7 @@ function ConditionsEditor({
                   value={condition.value ?? ''}
                   onChange={(value) => updateCondition(condition.id, { value })}
                   options={getValueSuggestionsForVariable(condition.variable)}
-                  placeholder="Value"
+                  placeholder="Valor"
                   className="flex-1 min-w-0"
                 />
               )}
@@ -459,11 +456,12 @@ function ConditionsEditor({
           </div>
         ))}
         <button
+          type="button"
           onClick={addCondition}
           className="flex items-center justify-center gap-1 w-full px-3 py-2 text-sm text-teal-600 bg-teal-50 rounded-lg hover:bg-teal-100"
         >
           <Plus className="w-4 h-4" />
-          Add Condition
+          Adicionar Condição
         </button>
       </div>
     </div>
@@ -480,7 +478,7 @@ function OptionsEditor({
   const addOption = () => {
     onChange([
       ...options,
-      { id: uuid(), title: `Option ${options.length + 1}`, description: '' },
+      { id: uuid(), title: `Opção ${options.length + 1}`, description: '' },
     ])
   }
 
@@ -494,9 +492,9 @@ function OptionsEditor({
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
-        Options
-      </label>
+      <span className="block text-sm font-medium text-gray-700 mb-2">
+        Opções
+      </span>
       <div className="space-y-2">
         {options.map((option) => (
           <div
@@ -509,7 +507,7 @@ function OptionsEditor({
                 value={option.title}
                 onChange={(e) => updateOption(option.id, { title: e.target.value })}
                 className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-                placeholder="Option title"
+                placeholder="Título da opção"
               />
               <button
                 type="button"
@@ -524,7 +522,7 @@ function OptionsEditor({
               value={option.description ?? ''}
               onChange={(e) => updateOption(option.id, { description: e.target.value })}
               className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-              placeholder="Description (optional)"
+              placeholder="Descrição (opcional)"
             />
           </div>
         ))}
@@ -534,7 +532,7 @@ function OptionsEditor({
           className="flex items-center justify-center gap-1 w-full px-3 py-2 text-sm text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100"
         >
           <Plus className="w-4 h-4" />
-          Add Option
+          Adicionar Opção
         </button>
       </div>
     </div>
