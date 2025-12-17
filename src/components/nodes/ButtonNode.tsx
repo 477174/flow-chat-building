@@ -44,9 +44,6 @@ function ButtonNode({ data, selected }: NodeProps<CustomNode>) {
               className="relative px-3 py-1.5 bg-purple-100 rounded text-sm pr-4"
             >
               <span className="text-purple-800 block">{button.label}</span>
-              {button.description && (
-                <span className="text-purple-600 text-xs block truncate">{button.description}</span>
-              )}
               <Handle
                 type="source"
                 position={Position.Right}

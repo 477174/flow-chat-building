@@ -51,7 +51,6 @@ export type FlowSimulationStatus =
 export interface FlowButtonOption {
   id: string
   label: string
-  description?: string
   value?: string
   next_node_id?: string
 }

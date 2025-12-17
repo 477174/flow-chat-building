@@ -284,7 +284,7 @@ function ButtonsEditor({
   const addButton = () => {
     onChange([
       ...buttons,
-      { id: uuid(), label: `Botão ${buttons.length + 1}`, description: '' },
+      { id: uuid(), label: `Botão ${buttons.length + 1}` },
     ])
   }
 
@@ -323,13 +323,6 @@ function ButtonsEditor({
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <input
-              type="text"
-              value={button.description ?? ''}
-              onChange={(e) => updateButton(button.id, { description: e.target.value })}
-              className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-              placeholder="Descrição (opcional)"
-            />
           </div>
         ))}
         {buttons.length < 3 && (

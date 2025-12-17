@@ -42,10 +42,12 @@ function OptionListNode({ data, selected }: NodeProps<CustomNode>) {
           options.map((option: FlowListOption) => (
             <div
               key={option.id}
-              className="relative flex items-center justify-between px-3 py-1.5 bg-indigo-100 rounded text-sm"
+              className="relative px-3 py-1.5 bg-indigo-100 rounded text-sm pr-4"
             >
-              <span className="text-indigo-800">{option.title}</span>
-              {/* Handle positioned inline with CSS - no JS measurement needed */}
+              <span className="text-indigo-800 block">{option.title}</span>
+              {option.description && (
+                <span className="text-indigo-600 text-xs block truncate">{option.description}</span>
+              )}
               <Handle
                 type="source"
                 position={Position.Right}
