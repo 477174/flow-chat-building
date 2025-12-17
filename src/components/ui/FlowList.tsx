@@ -36,7 +36,7 @@ export default function FlowList() {
   const handleSelectFlow = (flow: FlowTemplate) => {
     if (isDirty) {
       const confirm = window.confirm(
-        'You have unsaved changes. Are you sure you want to switch flows?'
+        'Você tem alterações não salvas. Tem certeza que deseja trocar de fluxo?'
       )
       if (!confirm) return
     }
@@ -46,7 +46,7 @@ export default function FlowList() {
   const handleNewFlow = () => {
     if (isDirty) {
       const confirm = window.confirm(
-        'You have unsaved changes. Are you sure you want to create a new flow?'
+        'Você tem alterações não salvas. Tem certeza que deseja criar um novo fluxo?'
       )
       if (!confirm) return
     }
@@ -56,7 +56,7 @@ export default function FlowList() {
   const handleDeleteFlow = async (flow: FlowTemplate, e: React.MouseEvent) => {
     e.stopPropagation()
     const confirm = window.confirm(
-      `Are you sure you want to delete "${flow.name}"?`
+      `Tem certeza que deseja excluir "${flow.name}"?`
     )
     if (!confirm) return
 
@@ -68,7 +68,7 @@ export default function FlowList() {
       fetchFlows()
     } catch (error) {
       console.error('Failed to delete flow:', error)
-      alert('Failed to delete flow')
+      alert('Falha ao excluir fluxo')
     }
   }
 
@@ -79,7 +79,7 @@ export default function FlowList() {
       fetchFlows()
     } catch (error) {
       console.error('Failed to duplicate flow:', error)
-      alert('Failed to duplicate flow')
+      alert('Falha ao duplicar fluxo')
     }
   }
 
@@ -87,7 +87,7 @@ export default function FlowList() {
     <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between mb-2">
-          <h2 className="font-semibold text-gray-800">Flows</h2>
+          <h2 className="font-semibold text-gray-800">Fluxos</h2>
           <button
             onClick={fetchFlows}
             disabled={isLoading}
@@ -101,16 +101,16 @@ export default function FlowList() {
           className="flex items-center justify-center gap-2 w-full px-3 py-2 text-sm text-white bg-blue-500 rounded-lg hover:bg-blue-600"
         >
           <Plus className="w-4 h-4" />
-          New Flow
+          Novo Fluxo
         </button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-2">
         {isLoading && flows.length === 0 ? (
-          <div className="text-center py-4 text-gray-500 text-sm">Loading...</div>
+          <div className="text-center py-4 text-gray-500 text-sm">Carregando...</div>
         ) : flows.length === 0 ? (
           <div className="text-center py-4 text-gray-500 text-sm">
-            No flows yet
+            Nenhum fluxo ainda
           </div>
         ) : (
           <div className="space-y-1">
@@ -127,21 +127,21 @@ export default function FlowList() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{flow.name}</p>
                   <p className="text-xs text-gray-500 truncate">
-                    {flow.nodes.length} nodes
+                    {flow.nodes.length} blocos
                   </p>
                 </div>
                 <div className="hidden group-hover:flex items-center gap-1">
                   <button
                     onClick={(e) => handleDuplicateFlow(flow, e)}
                     className="p-1 text-gray-400 hover:text-blue-500 rounded"
-                    title="Duplicate"
+                    title="Duplicar"
                   >
                     <Copy className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={(e) => handleDeleteFlow(flow, e)}
                     className="p-1 text-gray-400 hover:text-red-500 rounded"
-                    title="Delete"
+                    title="Excluir"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>

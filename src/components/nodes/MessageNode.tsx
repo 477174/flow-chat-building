@@ -160,7 +160,7 @@ function MessageNode({ data, selected }: NodeProps<CustomNode>) {
       <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 border-b border-gray-200 rounded-t-lg">
         <Icon className="w-4 h-4 text-blue-600" />
         <span className="font-medium text-sm text-blue-800">
-          {(data.label as string) || 'Message'}
+          {(data.label as string) || 'Mensagem'}
         </span>
       </div>
 

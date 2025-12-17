@@ -85,11 +85,11 @@ export default function Toolbar() {
     } catch (error) {
       console.error('Failed to save flow:', error)
       // Extract error message from Axios error response
-      let errorMessage = 'Failed to save flow. Please try again.'
+      let errorMessage = 'Falha ao salvar fluxo. Por favor, tente novamente.'
       if (error && typeof error === 'object' && 'response' in error) {
         const axiosError = error as { response?: { data?: { detail?: string } } }
         if (axiosError.response?.data?.detail) {
-          errorMessage = `Failed to save flow: ${axiosError.response.data.detail}`
+          errorMessage = `Falha ao salvar fluxo: ${axiosError.response.data.detail}`
         }
       }
       alert(errorMessage)
@@ -152,7 +152,7 @@ export default function Toolbar() {
 
         loadFlow({
           _id: '',
-          name: flowData.name || 'Imported Flow',
+          name: flowData.name || 'Fluxo Importado',
           description: flowData.description || '',
           nodes: flowData.nodes || [],
           edges: flowData.edges || [],
@@ -166,7 +166,7 @@ export default function Toolbar() {
         })
       } catch (error) {
         console.error('Failed to load flow:', error)
-        alert('Failed to load flow. Make sure the file is a valid JSON flow.')
+        alert('Falha ao carregar fluxo. Certifique-se de que o arquivo é um JSON de fluxo válido.')
       }
     }
     input.click()
@@ -180,7 +180,7 @@ export default function Toolbar() {
 
   const handleSetActiveFlow = async () => {
     if (!flowId) {
-      alert('Please save the flow first before setting it as active.')
+      alert('Por favor, salve o fluxo primeiro antes de defini-lo como ativo.')
       return
     }
 
@@ -197,7 +197,7 @@ export default function Toolbar() {
       }
     } catch (error) {
       console.error('Failed to set active flow:', error)
-      alert('Failed to set active flow. Please try again.')
+      alert('Falha ao definir fluxo ativo. Por favor, tente novamente.')
     } finally {
       setIsSettingActive(false)
     }
@@ -213,17 +213,17 @@ export default function Toolbar() {
             value={flowName}
             onChange={(e) => setFlowMeta({ name: e.target.value })}
             className="text-lg font-semibold text-gray-800 bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-1"
-            placeholder="Flow name"
+            placeholder="Nome do fluxo"
           />
           {isDirty && (
             <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded">
-              Unsaved
+              Não salvo
             </span>
           )}
           {isCurrentFlowActive && (
             <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded flex items-center gap-1">
               <Zap className="w-3 h-3" />
-              Active
+              Ativo
             </span>
           )}
         </div>
@@ -234,20 +234,20 @@ export default function Toolbar() {
           type="button"
           onClick={handleLoad}
           className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
-          title="Import flow from JSON file"
+          title="Importar fluxo de arquivo JSON"
         >
           <Upload className="w-4 h-4" />
-          Import
+          Importar
         </button>
 
         <button
           type="button"
           onClick={handleExport}
           className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
-          title="Export flow to JSON file"
+          title="Exportar fluxo para arquivo JSON"
         >
           <Download className="w-4 h-4" />
-          Export
+          Exportar
         </button>
 
         <button
@@ -255,10 +255,10 @@ export default function Toolbar() {
           onClick={handleSave}
           disabled={isSaving}
           className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
-          title="Save flow to server"
+          title="Salvar fluxo no servidor"
         >
           <Save className="w-4 h-4" />
-          {isSaving ? 'Saving...' : 'Save'}
+          {isSaving ? 'Salvando...' : 'Salvar'}
         </button>
 
         <button
@@ -274,12 +274,12 @@ export default function Toolbar() {
           {isCurrentFlowActive ? (
             <>
               <ZapOff className="w-4 h-4" />
-              Deactivate
+              Desativar
             </>
           ) : (
             <>
               <Zap className="w-4 h-4" />
-              Set Active
+              Ativar
             </>
           )}
         </button>
@@ -290,7 +290,7 @@ export default function Toolbar() {
           className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
         >
           <Play className="w-4 h-4" />
-          Simulate
+          Simular
         </button>
 
         <button type="button" className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg">

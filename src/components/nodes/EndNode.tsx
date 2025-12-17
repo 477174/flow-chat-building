@@ -18,7 +18,7 @@ function EndNode({ selected }: NodeProps<CustomNode>) {
         className="w-3 h-3 bg-red-700 border-2 border-white"
       />
       <Square className="w-4 h-4" />
-      <span className="font-medium">End</span>
+      <span className="font-medium">Fim</span>
     </div>
   )
 }

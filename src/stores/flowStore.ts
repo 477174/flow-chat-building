@@ -102,7 +102,7 @@ const initialNodes: FlowNode[] = [
     id: 'start-1',
     type: FlowNodeType.START,
     position: { x: 250, y: 50 },
-    data: { label: 'Start' },
+    data: { label: 'Início' },
   },
 ]
 
@@ -115,7 +115,7 @@ export const useFlowStore = create<FlowState>((set) => ({
   viewport: { x: 0, y: 0, zoom: 1 },
   saveVersion: 0,
   flowId: null,
-  flowName: 'New Flow',
+  flowName: 'Novo Fluxo',
   flowDescription: '',
   isGlobal: false,
   isActive: true,
@@ -253,7 +253,7 @@ export const useFlowStore = create<FlowState>((set) => ({
       edges: initialEdges,
       viewport: { x: 0, y: 0, zoom: 1 },
       flowId: null,
-      flowName: 'New Flow',
+      flowName: 'Novo Fluxo',
       flowDescription: '',
       isGlobal: false,
       isActive: true,
@@ -384,20 +384,20 @@ export const useFlowStore = create<FlowState>((set) => ({
 function getDefaultLabel(type: (typeof FlowNodeType)[keyof typeof FlowNodeType]): string {
   switch (type) {
     case FlowNodeType.START:
-      return 'Start'
+      return 'Início'
     case FlowNodeType.END:
-      return 'End'
+      return 'Fim'
     case FlowNodeType.MESSAGE:
-      return 'Message'
+      return 'Mensagem'
     case FlowNodeType.BUTTON:
-      return 'Buttons'
+      return 'Botões'
     case FlowNodeType.OPTION_LIST:
-      return 'Option List'
+      return 'Lista de Opções'
     case FlowNodeType.WAIT_RESPONSE:
-      return 'Wait Response'
+      return 'Aguardar Resposta'
     case FlowNodeType.CONDITIONAL:
-      return 'Condition'
+      return 'Condição'
     default:
-      return 'Node'
+      return 'Bloco'
   }
 }

@@ -22,7 +22,7 @@ function WaitResponseNode({ data, selected }: NodeProps<CustomNode>) {
       <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 border-b border-gray-200 rounded-t-lg">
         <Timer className="w-4 h-4 text-amber-600" />
         <span className="font-medium text-sm text-amber-800">
-          {(data.label as string) || 'Wait Timeout'}
+          {(data.label as string) || 'Aguardar Timeout'}
         </span>
       </div>
 
@@ -32,13 +32,13 @@ function WaitResponseNode({ data, selected }: NodeProps<CustomNode>) {
             <span>
               {formatTimeout(data.timeout_seconds as number)}
               {data.timeout_cancel_on_response === false && (
-                <span className="text-amber-600 text-xs ml-1">(always)</span>
+                <span className="text-amber-600 text-xs ml-1">(sempre)</span>
               )}
             </span>
           </div>
         ) : (
           <div className="text-xs text-gray-400 italic">
-            Configure timeout in panel
+            Configure o timeout no painel
           </div>
         )}
       </div>

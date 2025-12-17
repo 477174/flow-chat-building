@@ -13,7 +13,7 @@ function StartNode({ selected }: NodeProps<CustomNode>) {
       `}
     >
       <Play className="w-4 h-4" />
-      <span className="font-medium">Start</span>
+      <span className="font-medium">Início</span>
       <Handle
         type="source"
         position={Position.Bottom}

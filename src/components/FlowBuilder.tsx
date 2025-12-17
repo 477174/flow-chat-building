@@ -248,18 +248,18 @@ function NodePalette() {
   }
 
   const nodeItems = [
-    { type: 'message', label: 'Message', color: 'bg-blue-500' },
-    { type: 'button', label: 'Buttons', color: 'bg-purple-500' },
-    { type: 'option_list', label: 'Option List', color: 'bg-indigo-500' },
-    { type: 'wait_response', label: 'Wait Response', color: 'bg-amber-500' },
-    { type: 'conditional', label: 'Condition', color: 'bg-teal-500' },
-    { type: 'end', label: 'End', color: 'bg-red-500' },
+    { type: 'message', label: 'Mensagem', color: 'bg-blue-500' },
+    { type: 'button', label: 'Botões', color: 'bg-purple-500' },
+    { type: 'option_list', label: 'Lista de Opções', color: 'bg-indigo-500' },
+    { type: 'wait_response', label: 'Aguardar Resposta', color: 'bg-amber-500' },
+    { type: 'conditional', label: 'Condição', color: 'bg-teal-500' },
+    { type: 'end', label: 'Fim', color: 'bg-red-500' },
   ]
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-3 space-y-2">
       <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-        Drag to add
+        Arraste para adicionar
       </h3>
       <div className="space-y-1">
         {nodeItems.map((item) => (

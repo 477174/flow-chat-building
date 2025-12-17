@@ -103,9 +103,9 @@ export default function SimulationPanel() {
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 bg-green-500 text-white">
           <div>
-            <h3 className="font-semibold">Flow Simulation</h3>
+            <h3 className="font-semibold">Simulação do Fluxo</h3>
             <p className="text-xs opacity-80">
-              Status: {simulationStatus ?? 'Ready'}
+              Status: {simulationStatus ?? 'Pronto'}
             </p>
           </div>
           <button
@@ -121,7 +121,7 @@ export default function SimulationPanel() {
           {simulationMessages.length === 0 && !simulationStatus && (
             <div className="text-center py-8">
               <p className="text-gray-500 mb-4">
-                Click Start to begin the simulation
+                Clique em Iniciar para começar a simulação
               </p>
               <button
                 onClick={handleStart}
@@ -129,7 +129,7 @@ export default function SimulationPanel() {
                 className="flex items-center gap-2 mx-auto px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50"
               >
                 <Play className="w-4 h-4" />
-                Start Simulation
+                Iniciar Simulação
               </button>
             </div>
           )}
@@ -153,7 +153,7 @@ export default function SimulationPanel() {
                     rel="noopener noreferrer"
                     className="text-xs underline opacity-80 block mt-1"
                   >
-                    View Media
+                    Ver Mídia
                   </a>
                 )}
               </div>
@@ -180,8 +180,8 @@ export default function SimulationPanel() {
             <div className="text-center py-4">
               <p className="text-gray-500 text-sm">
                 {simulationStatus === FlowSimulationStatus.ERROR
-                  ? 'Simulation ended with error'
-                  : 'Simulation completed'}
+                  ? 'Simulação finalizada com erro'
+                  : 'Simulação concluída'}
               </p>
             </div>
           )}
@@ -205,10 +205,10 @@ export default function SimulationPanel() {
               disabled={!waitingForInput || isProcessing || isCompleted}
               placeholder={
                 isCompleted
-                  ? 'Simulation ended'
+                  ? 'Simulação finalizada'
                   : waitingForInput
-                    ? 'Type your response...'
-                    : 'Waiting for flow...'
+                    ? 'Digite sua resposta...'
+                    : 'Aguardando fluxo...'
               }
               className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
             />
