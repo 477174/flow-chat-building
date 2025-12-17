@@ -83,13 +83,14 @@ export function getUpstreamNodes(
 /**
  * Extract variable information from a node that creates variables
  * Button nodes, option_list nodes, and wait_response nodes all create variables
- * Uses node ID for storage and node label for display
+ * Uses node ID for storage and variable_name (or node label) for display
  */
 export function extractVariableFromNode(
   node: Node<FlowNodeData>
 ): Omit<AvailableVariable, 'type'> | null {
   const { data, type, id } = node
-  const label = data.label ?? id
+  // Priority: variable_name > label > id
+  const label = data.variable_name || data.label || id
 
   // Button node - collect button labels as possible values
   if (type === 'button' && data.buttons?.length) {

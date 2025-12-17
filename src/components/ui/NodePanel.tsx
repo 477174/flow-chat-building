@@ -178,6 +178,27 @@ export default function NodePanel() {
           </>
         )}
 
+        {/* Variable name (for nodes that capture variables) */}
+        {(type === 'button' || type === 'option_list' || type === 'wait_response') && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Nome da Variável
+            </label>
+            <input
+              type="text"
+              value={data.variable_name ?? ''}
+              onChange={(e) =>
+                updateNodeData(node.id, { variable_name: e.target.value })
+              }
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Ex: resposta_cliente"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Identificador da variável capturada neste bloco
+            </p>
+          </div>
+        )}
+
         {/* Buttons (for button node) */}
         {type === 'button' && (
           <ButtonsEditor

@@ -37,8 +37,9 @@ function ConditionalNode({ data, selected }: NodeProps<CustomNode>) {
 	const getVariableLabel = (condition: FlowCondition): string => {
 		if (condition.variableLabel) return condition.variableLabel;
 		// Variable name is the source node ID, look up its label
+		// Priority: variable_name (if not empty) > label > id
 		const sourceNode = nodes.find((n) => n.id === condition.variable);
-		return sourceNode?.data.label ?? condition.variable;
+		return sourceNode?.data.variable_name || sourceNode?.data.label || condition.variable;
 	};
 
 	return (
