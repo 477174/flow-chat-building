@@ -299,7 +299,7 @@ function ButtonsEditor({
   return (
     <div>
       <span className="block text-sm font-medium text-gray-700 mb-2">
-        Botões
+        Botões ({buttons.length}/3)
       </span>
       <div className="space-y-2">
         {buttons.map((button) => (
@@ -332,14 +332,16 @@ function ButtonsEditor({
             />
           </div>
         ))}
-        <button
-          type="button"
-          onClick={addButton}
-          className="flex items-center justify-center gap-1 w-full px-3 py-2 text-sm text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100"
-        >
-          <Plus className="w-4 h-4" />
-          Adicionar Botão
-        </button>
+        {buttons.length < 3 && (
+          <button
+            type="button"
+            onClick={addButton}
+            className="flex items-center justify-center gap-1 w-full px-3 py-2 text-sm text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100"
+          >
+            <Plus className="w-4 h-4" />
+            Adicionar Botão
+          </button>
+        )}
       </div>
     </div>
   )
@@ -493,7 +495,7 @@ function OptionsEditor({
   return (
     <div>
       <span className="block text-sm font-medium text-gray-700 mb-2">
-        Opções
+        Opções ({options.length}/10)
       </span>
       <div className="space-y-2">
         {options.map((option) => (
@@ -526,14 +528,16 @@ function OptionsEditor({
             />
           </div>
         ))}
-        <button
-          type="button"
-          onClick={addOption}
-          className="flex items-center justify-center gap-1 w-full px-3 py-2 text-sm text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100"
-        >
-          <Plus className="w-4 h-4" />
-          Adicionar Opção
-        </button>
+        {options.length < 10 && (
+          <button
+            type="button"
+            onClick={addOption}
+            className="flex items-center justify-center gap-1 w-full px-3 py-2 text-sm text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100"
+          >
+            <Plus className="w-4 h-4" />
+            Adicionar Opção
+          </button>
+        )}
       </div>
     </div>
   )
