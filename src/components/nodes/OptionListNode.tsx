@@ -24,7 +24,7 @@ function OptionListNode({ data, selected }: NodeProps<CustomNode>) {
       <div className="flex items-center gap-2 px-3 py-2 bg-indigo-50 border-b border-gray-200 rounded-t-lg">
         <List className="w-4 h-4 text-indigo-600" />
         <span className="font-medium text-sm text-indigo-800">
-          {(data.label as string) || 'Option List'}
+          {(data.label as string) || 'Lista de Opções'}
         </span>
       </div>
 
@@ -55,7 +55,7 @@ function OptionListNode({ data, selected }: NodeProps<CustomNode>) {
             </div>
           ))
         ) : (
-          <p className="text-xs text-gray-400 text-center py-1">No options added</p>
+          <p className="text-xs text-gray-400 text-center py-1">Nenhuma opção adicionada</p>
         )}
       </div>
 

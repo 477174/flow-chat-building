@@ -24,7 +24,7 @@ function ButtonNode({ data, selected }: NodeProps<CustomNode>) {
       <div className="flex items-center gap-2 px-3 py-2 bg-purple-50 border-b border-gray-200 rounded-t-lg">
         <LayoutGrid className="w-4 h-4 text-purple-600" />
         <span className="font-medium text-sm text-purple-800">
-          {(data.label as string) || 'Buttons'}
+          {(data.label as string) || 'Botões'}
         </span>
       </div>
 
@@ -41,10 +41,12 @@ function ButtonNode({ data, selected }: NodeProps<CustomNode>) {
           buttons.map((button: FlowButtonOption) => (
             <div
               key={button.id}
-              className="relative flex items-center justify-between px-3 py-1.5 bg-purple-100 rounded text-sm"
+              className="relative px-3 py-1.5 bg-purple-100 rounded text-sm pr-4"
             >
-              <span className="text-purple-800">{button.label}</span>
-              {/* Handle positioned inline with CSS - no JS measurement needed */}
+              <span className="text-purple-800 block">{button.label}</span>
+              {button.description && (
+                <span className="text-purple-600 text-xs block truncate">{button.description}</span>
+              )}
               <Handle
                 type="source"
                 position={Position.Right}
@@ -54,7 +56,7 @@ function ButtonNode({ data, selected }: NodeProps<CustomNode>) {
             </div>
           ))
         ) : (
-          <p className="text-xs text-gray-400 text-center py-1">No buttons added</p>
+          <p className="text-xs text-gray-400 text-center py-1">Nenhum botão adicionado</p>
         )}
       </div>
 
