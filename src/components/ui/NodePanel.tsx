@@ -245,16 +245,8 @@ export default function NodePanel() {
                   type="checkbox"
                   checked={data.timeout_enabled === true}
                   onChange={(e) => {
-                    if (!e.target.checked) {
-                      updateNodeData(node.id, {
-                        timeout_enabled: false,
-                        timeout_value: undefined,
-                        timeout_unit: undefined,
-                        timeout_seconds: undefined,
-                      })
-                    } else {
-                      updateNodeData(node.id, { timeout_enabled: true })
-                    }
+                    // Only toggle timeout_enabled, preserve other values
+                    updateNodeData(node.id, { timeout_enabled: e.target.checked })
                   }}
                   className="sr-only peer"
                 />

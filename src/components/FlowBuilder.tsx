@@ -1,4 +1,4 @@
-import { useCallback, useRef, useEffect, useState } from 'react'
+import { useCallback, useRef, useEffect, useState, useMemo } from 'react'
 import {
   ReactFlow,
   Background,
@@ -57,8 +57,23 @@ export default function FlowBuilder() {
     flowId,
   } = useFlowStore()
 
+  // Filter out timeout edges when timeout is disabled on source node
+  const visibleEdges = useMemo(() => {
+    return edges.filter((edge) => {
+      // If edge is from a timeout handle, check if timeout is enabled on source node
+      if (edge.sourceHandle === 'timeout') {
+        const sourceNode = nodes.find((n) => n.id === edge.source)
+        // Hide edge if timeout is disabled on source node
+        if (sourceNode && !sourceNode.data.timeout_enabled) {
+          return false
+        }
+      }
+      return true
+    })
+  }, [edges, nodes])
+
   // Apply random HSL colors to edges
-  const coloredEdges = useColoredEdges(edges)
+  const coloredEdges = useColoredEdges(visibleEdges)
 
   // Copy selected nodes and their connecting edges
   const handleCopy = useCallback(() => {

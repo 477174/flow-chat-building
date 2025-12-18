@@ -4,7 +4,7 @@ import { MessageSquare, Image, FileAudio, Video, FileText, Clock } from 'lucide-
 import type { CustomNode, FlowMessageType } from '@/types/flow'
 import VariableTextDisplay from '@/components/ui/VariableTextDisplay'
 import OccupancyBadge from '@/components/ui/OccupancyBadge'
-import { useNodeOccupancy } from '@/contexts/OccupancyContext'
+import { useNodeOccupancy } from '@/hooks/useOccupancyContext'
 
 /**
  * Format timeout seconds to human-readable format
@@ -64,6 +64,7 @@ function MessageNode({ id, data, selected }: NodeProps<CustomNode>) {
   const content = (data.content as string) || ''
   const mediaUrl = (data.media_url as string) || ''
   const hasTimeout = data.timeout_enabled && data.timeout_seconds
+  const hasTimeoutConfig = data.timeout_seconds != null // Has config even if disabled
   const occupancyCount = useNodeOccupancy(id)
 
   // Use wider node for media content
@@ -194,7 +195,7 @@ function MessageNode({ id, data, selected }: NodeProps<CustomNode>) {
 
       {renderMediaPreview()}
 
-      {/* Timeout section */}
+      {/* Timeout section - show indicator when enabled, but always render handle if config exists */}
       {hasTimeout && (
         <div className="px-3 py-1.5 border-t border-gray-100 flex items-center justify-between bg-red-50">
           <div className="flex items-center gap-1.5 text-xs text-red-600">
@@ -208,6 +209,15 @@ function MessageNode({ id, data, selected }: NodeProps<CustomNode>) {
             className="!relative !transform-none !inset-auto w-2.5 h-2.5 bg-red-500 border-2 border-white"
           />
         </div>
+      )}
+      {/* Hidden handle to preserve edges when timeout is disabled but has config */}
+      {!hasTimeout && hasTimeoutConfig && (
+        <Handle
+          type="source"
+          position={Position.Right}
+          id="timeout"
+          className="!absolute !right-0 !top-1/2 !-translate-y-1/2 w-2.5 h-2.5 !bg-transparent !border-0"
+        />
       )}
 
       <Handle
