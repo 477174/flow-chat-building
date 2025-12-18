@@ -16,12 +16,15 @@ import { Search, Users, X } from 'lucide-react'
 
 import { useFlowStore } from '@/stores/flowStore'
 import { nodeTypes } from './nodes'
+import { edgeTypes } from './edges'
 import Toolbar from './ui/Toolbar'
 import NodePanel from './ui/NodePanel'
 import FlowList from './ui/FlowList'
 import SimulationPanel from './ui/SimulationPanel'
 import LeadSearchPanel from './ui/LeadSearchPanel'
-import { OccupancyProvider, useOccupancyContext } from '@/contexts/OccupancyContext'
+import { OccupancyProvider } from '@/contexts/OccupancyContext'
+import { useOccupancyContext } from '@/hooks/useOccupancyContext'
+import { useColoredEdges } from '@/hooks/useColoredEdges'
 import type { FlowNodeData, FlowNodeType } from '@/types/flow'
 
 type FlowNode = Node<FlowNodeData, string>
@@ -53,6 +56,9 @@ export default function FlowBuilder() {
     setEdges,
     flowId,
   } = useFlowStore()
+
+  // Apply random HSL colors to edges
+  const coloredEdges = useColoredEdges(edges)
 
   // Copy selected nodes and their connecting edges
   const handleCopy = useCallback(() => {
@@ -180,7 +186,7 @@ export default function FlowBuilder() {
           <div ref={reactFlowWrapper} className="flex-1">
             <ReactFlow
               nodes={nodes}
-              edges={edges}
+              edges={coloredEdges}
               onNodesChange={onNodesChange}
               onEdgesChange={onEdgesChange}
               onConnect={onConnect}
@@ -192,6 +198,9 @@ export default function FlowBuilder() {
               onNodeClick={onNodeClick}
               onPaneClick={onPaneClick}
               nodeTypes={nodeTypes}
+              edgeTypes={edgeTypes}
+              edgesFocusable
+              elementsSelectable
               fitView
               snapToGrid
               snapGrid={[15, 15]}
