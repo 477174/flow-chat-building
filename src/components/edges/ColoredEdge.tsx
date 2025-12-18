@@ -53,13 +53,14 @@ export function ColoredEdge(props: EdgeProps<ColoredEdgeData>) {
       {/* Selection border - only visible when selected */}
       {selected && (
         <>
-          {/* Outer border */}
+          {/* Outer border - same color as edge but less opaque */}
           <path
             d={edgePath}
             fill="none"
-            stroke="#000000"
+            stroke={strokeColor}
             strokeWidth={borderWidth}
             strokeLinecap="round"
+            style={{ opacity: 0.4 }}
           />
           {/* Gap - uses background color to create floating effect */}
           <path
