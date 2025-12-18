@@ -1,8 +1,25 @@
 import { memo } from 'react'
 import { Handle, Position, type NodeProps } from '@xyflow/react'
-import { MessageSquare, Image, FileAudio, Video, FileText } from 'lucide-react'
+import { MessageSquare, Image, FileAudio, Video, FileText, Clock } from 'lucide-react'
 import type { CustomNode, FlowMessageType } from '@/types/flow'
 import VariableTextDisplay from '@/components/ui/VariableTextDisplay'
+import OccupancyBadge from '@/components/ui/OccupancyBadge'
+import { useNodeOccupancy } from '@/contexts/OccupancyContext'
+
+/**
+ * Format timeout seconds to human-readable format
+ */
+function formatTimeout(seconds: number): string {
+  if (seconds >= 3600 && seconds % 3600 === 0) {
+    const hours = seconds / 3600
+    return `${hours} ${hours === 1 ? 'hora' : 'horas'}`
+  }
+  if (seconds >= 60 && seconds % 60 === 0) {
+    const minutes = seconds / 60
+    return `${minutes} ${minutes === 1 ? 'minuto' : 'minutos'}`
+  }
+  return `${seconds} ${seconds === 1 ? 'segundo' : 'segundos'}`
+}
 
 const messageTypeIcons: Record<FlowMessageType, typeof MessageSquare> = {
   text: MessageSquare,
@@ -41,11 +58,13 @@ const getGoogleDriveEmbedUrl = (url: string): string | null => {
   return `https://drive.google.com/file/d/${fileId}/preview`
 }
 
-function MessageNode({ data, selected }: NodeProps<CustomNode>) {
+function MessageNode({ id, data, selected }: NodeProps<CustomNode>) {
   const messageType = (data.message_type as FlowMessageType) ?? 'text'
   const Icon = messageTypeIcons[messageType]
   const content = (data.content as string) || ''
   const mediaUrl = (data.media_url as string) || ''
+  const hasTimeout = data.timeout_enabled && data.timeout_seconds
+  const occupancyCount = useNodeOccupancy(id)
 
   // Use wider node for media content
   const hasMedia = mediaUrl && (messageType === 'video' || messageType === 'image' || messageType === 'audio')
@@ -146,11 +165,12 @@ function MessageNode({ data, selected }: NodeProps<CustomNode>) {
   return (
     <div
       className={`
-        rounded-lg shadow-md bg-white border-2
+        relative rounded-lg shadow-md bg-white border-2
         ${hasMedia ? 'min-w-[400px] max-w-[480px]' : 'min-w-[200px] max-w-[280px]'}
         ${selected ? 'border-blue-500' : 'border-gray-200'}
       `}
     >
+      <OccupancyBadge count={occupancyCount} />
       <Handle
         type="target"
         position={Position.Top}
@@ -174,9 +194,26 @@ function MessageNode({ data, selected }: NodeProps<CustomNode>) {
 
       {renderMediaPreview()}
 
+      {/* Timeout section */}
+      {hasTimeout && (
+        <div className="px-3 py-1.5 border-t border-gray-100 flex items-center justify-between bg-red-50">
+          <div className="flex items-center gap-1.5 text-xs text-red-600">
+            <Clock className="w-3 h-3" />
+            <span>Timeout: {formatTimeout(data.timeout_seconds as number)}</span>
+          </div>
+          <Handle
+            type="source"
+            position={Position.Right}
+            id="timeout"
+            className="!relative !transform-none !inset-auto w-2.5 h-2.5 bg-red-500 border-2 border-white"
+          />
+        </div>
+      )}
+
       <Handle
         type="source"
         position={Position.Bottom}
+        id="default"
         className="w-3 h-3 bg-blue-500 border-2 border-white"
       />
     </div>

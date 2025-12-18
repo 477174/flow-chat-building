@@ -111,75 +111,54 @@ export default function NodePanel() {
           </>
         )}
 
-        {/* Timeout Configuration (for wait_response) */}
+        {/* Delay Configuration (for wait_response/delay node) */}
         {type === 'wait_response' && (
-          <>
-            <div>
-              <h4 className="text-sm font-medium text-gray-700 mb-3">Configurações de Timeout</h4>
-
-              {/* Duration + Unit */}
-              <div className="flex gap-2 mb-3">
-                <div className="flex-1">
-                  <label className="block text-xs text-gray-500 mb-1">Duração</label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={data.timeout_value ?? ''}
-                    onChange={(e) => {
-                      const value = e.target.value ? parseInt(e.target.value) : undefined
-                      const unit = (data.timeout_unit as TimeoutUnit) ?? 'minutes'
-                      updateNodeData(node.id, {
-                        timeout_value: value,
-                        timeout_seconds: value ? convertToSeconds(value, unit) : undefined,
-                      })
-                    }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                    placeholder="5"
-                  />
-                </div>
-                <div className="w-28">
-                  <label className="block text-xs text-gray-500 mb-1">Unidade</label>
-                  <select
-                    value={data.timeout_unit ?? 'minutes'}
-                    onChange={(e) => {
-                      const unit = e.target.value as TimeoutUnit
-                      const value = data.timeout_value as number | undefined
-                      updateNodeData(node.id, {
-                        timeout_unit: unit,
-                        timeout_seconds: value ? convertToSeconds(value, unit) : undefined,
-                      })
-                    }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                  >
-                    <option value="seconds">Segundos</option>
-                    <option value="minutes">Minutos</option>
-                    <option value="hours">Horas</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Cancel on Response Checkbox */}
-              <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+          <div>
+            <h4 className="text-sm font-medium text-gray-700 mb-3">Configuração de Atraso</h4>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <label className="block text-xs text-gray-500 mb-1">Duração</label>
                 <input
-                  type="checkbox"
-                  checked={data.timeout_cancel_on_response !== false}
-                  onChange={(e) => updateNodeData(node.id, { timeout_cancel_on_response: e.target.checked })}
-                  className="rounded border-gray-300 text-amber-500 focus:ring-amber-500"
+                  type="number"
+                  min="1"
+                  value={data.timeout_value ?? ''}
+                  onChange={(e) => {
+                    const value = e.target.value ? parseInt(e.target.value) : undefined
+                    const unit = (data.timeout_unit as TimeoutUnit) ?? 'seconds'
+                    updateNodeData(node.id, {
+                      timeout_value: value,
+                      timeout_seconds: value ? convertToSeconds(value, unit) : undefined,
+                    })
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                  placeholder="5"
                 />
-                Cancelar timeout se o usuário responder
-              </label>
-
-              {data.timeout_value && (
-                <p className="mt-2 text-xs text-amber-600 bg-amber-50 p-2 rounded">
-                  Conecte este bloco ao destino do fluxo após {data.timeout_value as number} {(data.timeout_unit as string) || 'minutos'} sem resposta do usuário.
-                </p>
-              )}
+              </div>
+              <div className="w-28">
+                <label className="block text-xs text-gray-500 mb-1">Unidade</label>
+                <select
+                  value={data.timeout_unit ?? 'seconds'}
+                  onChange={(e) => {
+                    const unit = e.target.value as TimeoutUnit
+                    const value = data.timeout_value as number | undefined
+                    updateNodeData(node.id, {
+                      timeout_unit: unit,
+                      timeout_seconds: value ? convertToSeconds(value, unit) : undefined,
+                    })
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                >
+                  <option value="seconds">Segundos</option>
+                  <option value="minutes">Minutos</option>
+                  <option value="hours">Horas</option>
+                </select>
+              </div>
             </div>
-          </>
+          </div>
         )}
 
         {/* Variable name (for nodes that capture variables) */}
-        {(type === 'button' || type === 'option_list' || type === 'wait_response') && (
+        {(type === 'button' || type === 'option_list') && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Nome da Variável
@@ -254,6 +233,83 @@ export default function NodePanel() {
             onChange={(conditions) => updateNodeData(node.id, { conditions })}
             availableVariables={availableVariables}
           />
+        )}
+
+        {/* Timeout Configuration (for message, button, option_list) */}
+        {(type === 'message' || type === 'button' || type === 'option_list') && (
+          <div className="border-t border-gray-200 pt-4">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-sm font-medium text-gray-700">Timeout</h4>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={data.timeout_enabled === true}
+                  onChange={(e) => {
+                    if (!e.target.checked) {
+                      updateNodeData(node.id, {
+                        timeout_enabled: false,
+                        timeout_value: undefined,
+                        timeout_unit: undefined,
+                        timeout_seconds: undefined,
+                      })
+                    } else {
+                      updateNodeData(node.id, { timeout_enabled: true })
+                    }
+                  }}
+                  className="sr-only peer"
+                />
+                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-500"></div>
+              </label>
+            </div>
+
+            {data.timeout_enabled && (
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <label className="block text-xs text-gray-500 mb-1">Duração</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={data.timeout_value ?? ''}
+                    onChange={(e) => {
+                      const value = e.target.value ? parseInt(e.target.value) : undefined
+                      const unit = (data.timeout_unit as TimeoutUnit) ?? 'minutes'
+                      updateNodeData(node.id, {
+                        timeout_value: value,
+                        timeout_seconds: value ? convertToSeconds(value, unit) : undefined,
+                      })
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    placeholder="5"
+                  />
+                </div>
+                <div className="w-28">
+                  <label className="block text-xs text-gray-500 mb-1">Unidade</label>
+                  <select
+                    value={data.timeout_unit ?? 'minutes'}
+                    onChange={(e) => {
+                      const unit = e.target.value as TimeoutUnit
+                      const value = data.timeout_value as number | undefined
+                      updateNodeData(node.id, {
+                        timeout_unit: unit,
+                        timeout_seconds: value ? convertToSeconds(value, unit) : undefined,
+                      })
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  >
+                    <option value="seconds">Segundos</option>
+                    <option value="minutes">Minutos</option>
+                    <option value="hours">Horas</option>
+                  </select>
+                </div>
+              </div>
+            )}
+
+            {data.timeout_enabled && data.timeout_value && (
+              <p className="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded">
+                Conecte a saída de timeout ao destino do fluxo após {data.timeout_value as number} {(data.timeout_unit as string) || 'minutos'}.
+              </p>
+            )}
+          </div>
         )}
 
         {/* Delete button */}

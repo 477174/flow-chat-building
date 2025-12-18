@@ -12,6 +12,7 @@ import {
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { v4 as uuid } from 'uuid'
+import { Search, Users, X } from 'lucide-react'
 
 import { useFlowStore } from '@/stores/flowStore'
 import { nodeTypes } from './nodes'
@@ -19,6 +20,8 @@ import Toolbar from './ui/Toolbar'
 import NodePanel from './ui/NodePanel'
 import FlowList from './ui/FlowList'
 import SimulationPanel from './ui/SimulationPanel'
+import LeadSearchPanel from './ui/LeadSearchPanel'
+import { OccupancyProvider, useOccupancyContext } from '@/contexts/OccupancyContext'
 import type { FlowNodeData, FlowNodeType } from '@/types/flow'
 
 type FlowNode = Node<FlowNodeData, string>
@@ -33,6 +36,7 @@ export default function FlowBuilder() {
   const reactFlowWrapper = useRef<HTMLDivElement>(null)
   const reactFlowInstance = useRef<ReactFlowInstance<FlowNode, FlowEdge> | null>(null)
   const [clipboard, setClipboard] = useState<ClipboardData | null>(null)
+  const [showLeadSearch, setShowLeadSearch] = useState(false)
 
   const {
     nodes,
@@ -47,6 +51,7 @@ export default function FlowBuilder() {
     isSimulating,
     setNodes,
     setEdges,
+    flowId,
   } = useFlowStore()
 
   // Copy selected nodes and their connecting edges
@@ -163,87 +168,107 @@ export default function FlowBuilder() {
   }, [selectNode])
 
   return (
-    <div className="flex h-screen w-screen bg-gray-100">
-      {/* Left sidebar - Flow List */}
-      <FlowList />
+    <OccupancyProvider flowId={flowId}>
+      <div className="flex h-screen w-screen bg-gray-100">
+        {/* Left sidebar - Flow List */}
+        <FlowList />
 
-      {/* Main canvas */}
-      <div className="flex-1 flex flex-col">
-        <Toolbar />
+        {/* Main canvas */}
+        <div className="flex-1 flex flex-col">
+          <Toolbar />
 
-        <div ref={reactFlowWrapper} className="flex-1">
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            onInit={(instance) => {
-              reactFlowInstance.current = instance
-            }}
-            onDrop={onDrop}
-            onDragOver={onDragOver}
-            onNodeClick={onNodeClick}
-            onPaneClick={onPaneClick}
-            nodeTypes={nodeTypes}
-            fitView
-            snapToGrid
-            snapGrid={[15, 15]}
-            deleteKeyCode={['Backspace', 'Delete']}
-            // Pan: Space + drag
-            panOnDrag={false}
-            panActivationKeyCode="Space"
-            // Zoom: Ctrl + scroll
-            zoomOnScroll={false}
-            zoomActivationKeyCode="Control"
-            minZoom={0.1}
-            // Selection: drag on canvas for box select
-            selectionOnDrag
-            selectionMode={SelectionMode.Partial}
-            selectNodesOnDrag={false}
-            // Multi-select with shift
-            multiSelectionKeyCode="Shift"
-            className="bg-gray-50"
-          >
-            <Background gap={15} size={1} color="#e5e7eb" />
-            <Controls />
-            <MiniMap
-              nodeColor={(node) => {
-                switch (node.type) {
-                  case 'start':
-                    return '#22c55e'
-                  case 'end':
-                    return '#ef4444'
-                  case 'message':
-                    return '#3b82f6'
-                  case 'button':
-                    return '#a855f7'
-                  case 'option_list':
-                    return '#6366f1'
-                  case 'wait_response':
-                    return '#f59e0b'
-                  case 'conditional':
-                    return '#14b8a6'
-                  default:
-                    return '#6b7280'
-                }
+          <div ref={reactFlowWrapper} className="flex-1">
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onConnect={onConnect}
+              onInit={(instance) => {
+                reactFlowInstance.current = instance
               }}
-              className="bg-white rounded-lg shadow-md"
-            />
+              onDrop={onDrop}
+              onDragOver={onDragOver}
+              onNodeClick={onNodeClick}
+              onPaneClick={onPaneClick}
+              nodeTypes={nodeTypes}
+              fitView
+              snapToGrid
+              snapGrid={[15, 15]}
+              deleteKeyCode={['Backspace', 'Delete']}
+              // Pan: Space + drag
+              panOnDrag={false}
+              panActivationKeyCode="Space"
+              // Zoom: Ctrl + scroll
+              zoomOnScroll={false}
+              zoomActivationKeyCode="Control"
+              minZoom={0.1}
+              // Selection: drag on canvas for box select
+              selectionOnDrag
+              selectionMode={SelectionMode.Partial}
+              selectNodesOnDrag={false}
+              // Multi-select with shift
+              multiSelectionKeyCode="Shift"
+              className="bg-gray-50"
+            >
+              <Background gap={15} size={1} color="#e5e7eb" />
+              <Controls />
+              <MiniMap
+                nodeColor={(node) => {
+                  switch (node.type) {
+                    case 'start':
+                      return '#22c55e'
+                    case 'end':
+                      return '#ef4444'
+                    case 'message':
+                      return '#3b82f6'
+                    case 'button':
+                      return '#a855f7'
+                    case 'option_list':
+                      return '#6366f1'
+                    case 'wait_response':
+                      return '#f59e0b'
+                    case 'conditional':
+                      return '#14b8a6'
+                    default:
+                      return '#6b7280'
+                  }
+                }}
+                className="bg-white rounded-lg shadow-md"
+              />
 
-            <Panel position="top-left" className="m-2">
-              <NodePalette />
-            </Panel>
-          </ReactFlow>
+              <Panel position="top-left" className="m-2">
+                <NodePalette />
+              </Panel>
+
+              {/* Occupancy controls */}
+              <Panel position="top-right" className="m-2">
+                <OccupancyControls
+                  showLeadSearch={showLeadSearch}
+                  onToggleLeadSearch={() => setShowLeadSearch(!showLeadSearch)}
+                />
+              </Panel>
+
+              {/* Lead search panel */}
+              {showLeadSearch && (
+                <Panel position="top-right" className="m-2 mt-14">
+                  <LeadSearchPanel
+                    flowId={flowId}
+                    onClose={() => setShowLeadSearch(false)}
+                  />
+                </Panel>
+              )}
+            </ReactFlow>
+          </div>
         </div>
+
+        {/* Right panel - Node editor */}
+        {isPanelOpen && selectedNodeId && <NodePanel />}
+
+        {/* Simulation panel */}
+        {isSimulating && <SimulationPanel />}
       </div>
-
-      {/* Right panel - Node editor */}
-      {isPanelOpen && selectedNodeId && <NodePanel />}
-
-      {/* Simulation panel */}
-      {isSimulating && <SimulationPanel />}
-    </div>
+    </OccupancyProvider>
   )
 }
 
@@ -257,7 +282,7 @@ function NodePalette() {
     { type: 'message', label: 'Mensagem', color: 'bg-blue-500' },
     { type: 'button', label: 'Botões', color: 'bg-purple-500' },
     { type: 'option_list', label: 'Lista de Opções', color: 'bg-indigo-500' },
-    { type: 'wait_response', label: 'Aguardar Resposta', color: 'bg-amber-500' },
+    { type: 'wait_response', label: 'Atraso', color: 'bg-amber-500' },
     { type: 'conditional', label: 'Condição', color: 'bg-teal-500' },
     { type: 'end', label: 'Fim', color: 'bg-red-500' },
   ]
@@ -284,6 +309,44 @@ function NodePalette() {
           </button>
         ))}
       </div>
+    </div>
+  )
+}
+
+interface OccupancyControlsProps {
+  showLeadSearch: boolean
+  onToggleLeadSearch: () => void
+}
+
+function OccupancyControls({ showLeadSearch, onToggleLeadSearch }: OccupancyControlsProps) {
+  const occupancy = useOccupancyContext()
+
+  return (
+    <div className="bg-white rounded-lg shadow-lg p-2 flex items-center gap-2">
+      {/* Total leads badge */}
+      {occupancy && occupancy.totalLeads > 0 && (
+        <div className="flex items-center gap-1.5 px-2 py-1 bg-green-100 rounded-md">
+          <Users className="w-4 h-4 text-green-600" />
+          <span className="text-sm font-medium text-green-700">
+            {occupancy.totalLeads} lead{occupancy.totalLeads !== 1 ? 's' : ''}
+          </span>
+        </div>
+      )}
+
+      {/* Search button */}
+      <button
+        onClick={onToggleLeadSearch}
+        className={`
+          p-2 rounded-md transition-colors
+          ${showLeadSearch
+            ? 'bg-blue-100 text-blue-600'
+            : 'hover:bg-gray-100 text-gray-600'
+          }
+        `}
+        title="Buscar lead por telefone"
+      >
+        {showLeadSearch ? <X className="w-4 h-4" /> : <Search className="w-4 h-4" />}
+      </button>
     </div>
   )
 }

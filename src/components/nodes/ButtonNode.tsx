@@ -1,20 +1,40 @@
 import type { CustomNode, FlowButtonOption } from '@/types/flow'
 import { Handle, Position, type NodeProps } from '@xyflow/react'
-import { LayoutGrid } from 'lucide-react'
+import { LayoutGrid, Clock } from 'lucide-react'
 import { memo } from 'react'
 import VariableTextDisplay from '@/components/ui/VariableTextDisplay'
+import OccupancyBadge from '@/components/ui/OccupancyBadge'
+import { useNodeOccupancy } from '@/contexts/OccupancyContext'
 
-function ButtonNode({ data, selected }: NodeProps<CustomNode>) {
+/**
+ * Format timeout seconds to human-readable format
+ */
+function formatTimeout(seconds: number): string {
+  if (seconds >= 3600 && seconds % 3600 === 0) {
+    const hours = seconds / 3600
+    return `${hours} ${hours === 1 ? 'hora' : 'horas'}`
+  }
+  if (seconds >= 60 && seconds % 60 === 0) {
+    const minutes = seconds / 60
+    return `${minutes} ${minutes === 1 ? 'minuto' : 'minutos'}`
+  }
+  return `${seconds} ${seconds === 1 ? 'segundo' : 'segundos'}`
+}
+
+function ButtonNode({ id, data, selected }: NodeProps<CustomNode>) {
   const buttons = (data.buttons as FlowButtonOption[] | undefined) ?? []
   const content = (data.content as string) || ''
+  const hasTimeout = data.timeout_enabled && data.timeout_seconds
+  const occupancyCount = useNodeOccupancy(id)
 
   return (
     <div
       className={`
-        min-w-[220px] max-w-[300px] rounded-lg shadow-md bg-white border-2
+        relative min-w-[220px] max-w-[300px] rounded-lg shadow-md bg-white border-2
         ${selected ? 'border-purple-500' : 'border-gray-200'}
       `}
     >
+      <OccupancyBadge count={occupancyCount} />
       <Handle
         type="target"
         position={Position.Top}
@@ -56,6 +76,22 @@ function ButtonNode({ data, selected }: NodeProps<CustomNode>) {
           <p className="text-xs text-gray-400 text-center py-1">Nenhum botão adicionado</p>
         )}
       </div>
+
+      {/* Timeout section */}
+      {hasTimeout && (
+        <div className="px-3 py-1.5 border-t border-gray-100 flex items-center justify-between bg-red-50">
+          <div className="flex items-center gap-1.5 text-xs text-red-600">
+            <Clock className="w-3 h-3" />
+            <span>Timeout: {formatTimeout(data.timeout_seconds as number)}</span>
+          </div>
+          <Handle
+            type="source"
+            position={Position.Right}
+            id="timeout"
+            className="!relative !transform-none !inset-auto w-2.5 h-2.5 bg-red-500 border-2 border-white"
+          />
+        </div>
+      )}
 
       <Handle
         type="source"
