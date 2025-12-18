@@ -18,7 +18,38 @@ import {
   type FlowSimulationMessage,
   type VariableTransform,
   type VariableTransformScope,
+  type TimeoutUnit,
 } from '@/types/flow'
+
+/**
+ * Convert timeout_seconds back to display value and unit
+ * Prefers larger units when possible (hours > minutes > seconds)
+ */
+function convertSecondsToDisplay(seconds: number): { value: number; unit: TimeoutUnit } {
+  if (seconds >= 3600 && seconds % 3600 === 0) {
+    return { value: seconds / 3600, unit: 'hours' }
+  }
+  if (seconds >= 60 && seconds % 60 === 0) {
+    return { value: seconds / 60, unit: 'minutes' }
+  }
+  return { value: seconds, unit: 'seconds' }
+}
+
+/**
+ * Hydrate node data with computed display values for timeout
+ */
+function hydrateNodeData(data: FlowNodeData): FlowNodeData {
+  // If timeout_seconds exists but timeout_value doesn't, compute it
+  if (data.timeout_seconds != null && data.timeout_value == null) {
+    const { value, unit } = convertSecondsToDisplay(data.timeout_seconds)
+    return {
+      ...data,
+      timeout_value: value,
+      timeout_unit: unit,
+    }
+  }
+  return data
+}
 
 type FlowNode = Node<FlowNodeData, string>
 type FlowEdge = Edge
@@ -231,7 +262,7 @@ export const useFlowStore = create<FlowState>((set) => ({
         id: n.id,
         type: n.type,
         position: n.position,
-        data: n.data,
+        data: hydrateNodeData(n.data),
       })),
       edges: flow.edges.map((e) => ({
         id: e.id,
