@@ -3,6 +3,7 @@ import {
   getFlowOccupancy,
   createOccupancyWebSocket,
   type FlowOccupancy,
+  type LeadPosition,
 } from '@/services/api'
 
 interface OccupancyState {
@@ -34,6 +35,7 @@ interface OccupancyUpdateEvent {
 type WebSocketEvent = NodeChangeEvent | OccupancyUpdateEvent
 
 export function useFlowOccupancy(flowId: string | null) {
+  console.log('[Occupancy] Hook called with flowId:', flowId)
   const [state, setState] = useState<OccupancyState>({
     occupancy: {},
     totalLeads: 0,
@@ -46,18 +48,21 @@ export function useFlowOccupancy(flowId: string | null) {
 
   // Fetch initial occupancy data
   const fetchOccupancy = useCallback(async () => {
+    console.log('[Occupancy] fetchOccupancy called, flowId:', flowId)
     if (!flowId) return
 
     setState((prev) => ({ ...prev, isLoading: true, error: null }))
 
     try {
       const data = await getFlowOccupancy(flowId)
+      console.log('[Occupancy] API response:', data)
       // Handle empty or undefined response
       const occupancy = data || {}
       const total = Object.values(occupancy).reduce(
         (sum, node) => sum + (node?.count ?? 0),
         0
       )
+      console.log('[Occupancy] Parsed occupancy:', occupancy, 'total:', total)
 
       setState({
         occupancy,
@@ -93,17 +98,18 @@ export function useFlowOccupancy(flowId: string | null) {
     ws.onmessage = (event) => {
       try {
         const message: WebSocketEvent = JSON.parse(event.data)
+        console.log('[Occupancy WS] Received message:', message)
 
         if (message.type === 'occupancy_update') {
+          console.log('[Occupancy WS] Updating state with:', message.data)
           setState((prev) => ({
             ...prev,
             occupancy: message.data.occupancy,
             totalLeads: message.data.total_leads,
           }))
-        } else if (message.type === 'node_change') {
-          // Refresh occupancy on node changes
-          fetchOccupancy()
         }
+        // Note: node_change events are followed by occupancy_update with full data,
+        // so no need to fetch separately (which could cause race conditions)
       } catch (err) {
         console.error('[Occupancy WS] Parse error:', err)
       }
@@ -122,13 +128,17 @@ export function useFlowOccupancy(flowId: string | null) {
     }
 
     wsRef.current = ws
-  }, [flowId, fetchOccupancy])
+  }, [flowId])
 
   // Initial fetch and WebSocket connection
   useEffect(() => {
+    console.log('[Occupancy] useEffect triggered, flowId:', flowId)
     if (flowId) {
+      console.log('[Occupancy] flowId is truthy, starting fetch and WS')
       fetchOccupancy()
       connectWebSocket()
+    } else {
+      console.log('[Occupancy] flowId is null/undefined, skipping')
     }
 
     return () => {
@@ -149,12 +159,21 @@ export function useFlowOccupancy(flowId: string | null) {
     [state.occupancy]
   )
 
+  // Get leads for a specific node
+  const getLeadsOnNode = useCallback(
+    (nodeId: string): LeadPosition[] => {
+      return state.occupancy[nodeId]?.leads ?? []
+    },
+    [state.occupancy]
+  )
+
   return {
     occupancy: state.occupancy,
     totalLeads: state.totalLeads,
     isLoading: state.isLoading,
     error: state.error,
     getNodeCount,
+    getLeadsOnNode,
     refresh: fetchOccupancy,
   }
 }

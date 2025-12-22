@@ -1,4 +1,4 @@
-import { X, Trash2, Plus, ChevronDown, ChevronRight } from 'lucide-react'
+import { X, Trash2, Plus, ChevronDown, ChevronRight, Users, Phone } from 'lucide-react'
 import { useState, useMemo } from 'react'
 import { v4 as uuid } from 'uuid'
 import { useFlowStore } from '@/stores/flowStore'
@@ -11,6 +11,7 @@ import {
   type TimeoutUnit,
 } from '@/types/flow'
 import { useAvailableVariables, type AvailableVariable } from '@/hooks/useAvailableVariables'
+import { useNodeLeads } from '@/hooks/useOccupancyContext'
 import VariableTextEditor from './VariableTextEditor'
 import VariablePanel from './VariablePanel'
 import ComboboxInput, { type ComboboxOption } from './ComboboxInput'
@@ -19,9 +20,13 @@ export default function NodePanel() {
   const { nodes, selectedNodeId, updateNodeData, deleteNode, togglePanel } =
     useFlowStore()
   const [showVariablePanel, setShowVariablePanel] = useState(false)
+  const [showLeadsSection, setShowLeadsSection] = useState(true)
 
   const node = nodes.find((n) => n.id === selectedNodeId)
   const availableVariables = useAvailableVariables(selectedNodeId)
+
+  // Get leads from context (no API calls needed)
+  const leads = useNodeLeads(selectedNodeId ?? '')
 
   if (!node) return null
 
@@ -40,6 +45,47 @@ export default function NodePanel() {
       </div>
 
       <div className="p-4 space-y-4">
+        {/* Leads on this node section */}
+        {leads.length > 0 && (
+          <div className="bg-green-50 border border-green-200 rounded-lg">
+            <button
+              type="button"
+              onClick={() => setShowLeadsSection(!showLeadsSection)}
+              className="w-full flex items-center justify-between p-3"
+            >
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-green-600" />
+                <span className="text-sm font-medium text-green-800">
+                  {leads.length} lead{leads.length !== 1 ? 's' : ''} neste bloco
+                </span>
+              </div>
+              {showLeadsSection ? (
+                <ChevronDown className="w-4 h-4 text-green-600" />
+              ) : (
+                <ChevronRight className="w-4 h-4 text-green-600" />
+              )}
+            </button>
+
+            {showLeadsSection && (
+              <div className="px-3 pb-3 space-y-1">
+                <div className="max-h-40 overflow-y-auto space-y-1">
+                  {leads.map((lead) => (
+                    <div
+                      key={lead.phone}
+                      className="flex items-center gap-2 px-2 py-1.5 bg-white rounded border border-green-100"
+                    >
+                      <Phone className="w-3 h-3 text-green-500 flex-shrink-0" />
+                      <span className="text-sm font-mono text-gray-700">
+                        {lead.phone}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Label */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">

@@ -1,5 +1,5 @@
 import { createContext } from 'react'
-import type { FlowOccupancy } from '@/services/api'
+import type { FlowOccupancy, LeadPosition } from '@/services/api'
 
 export interface OccupancyContextValue {
   occupancy: FlowOccupancy
@@ -7,6 +7,7 @@ export interface OccupancyContextValue {
   isLoading: boolean
   error: string | null
   getNodeCount: (nodeId: string) => number
+  getLeadsOnNode: (nodeId: string) => LeadPosition[]
   refresh: () => void
 }
 

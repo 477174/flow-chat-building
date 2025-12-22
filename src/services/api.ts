@@ -105,6 +105,7 @@ export function createSimulationWebSocket(simulationId: string): WebSocket {
 export interface NodeOccupancy {
   node_id: string
   count: number
+  leads: LeadPosition[]
 }
 
 export interface FlowOccupancy {
@@ -129,6 +130,13 @@ export interface LeadSearchResult {
   flow_name?: string | null
 }
 
+export interface LeadPosition {
+  phone: string
+  session_id: string | null
+  node_id: string | null
+  node_entered_at: string | null
+}
+
 export interface LeadSearchResponse {
   found: boolean
   lead: LeadSearchResult | null
@@ -144,6 +152,14 @@ export async function getNodeOccupancy(
   nodeId: string
 ): Promise<{ count: number; leads: LeadSearchResult[] }> {
   const { data } = await api.get(`/flows/${flowId}/nodes/${nodeId}/occupancy`)
+  return data
+}
+
+export async function getLeadsOnNode(
+  flowId: string,
+  nodeId: string
+): Promise<LeadPosition[]> {
+  const { data } = await api.get<LeadPosition[]>(`/flows/${flowId}/nodes/${nodeId}/leads`)
   return data
 }
 
