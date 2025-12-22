@@ -101,6 +101,85 @@ export function createSimulationWebSocket(simulationId: string): WebSocket {
   return new WebSocket(`${protocol}//${host}/api/simulations/${simulationId}/ws`)
 }
 
+// Occupancy & Lead Tracking
+export interface NodeOccupancy {
+  node_id: string
+  count: number
+}
+
+export interface FlowOccupancy {
+  [nodeId: string]: NodeOccupancy
+}
+
+// API response wrapper for flow occupancy
+interface FlowOccupancyApiResponse {
+  flow_id: string
+  total_leads: number
+  occupancy: FlowOccupancy
+}
+
+export interface LeadSearchResult {
+  phone: string
+  session_id: string
+  flow_id: string | null
+  current_node_id: string | null
+  node_entered_at: string | null
+  duration_seconds: number
+  variables: Record<string, unknown>
+  flow_name?: string | null
+}
+
+export interface LeadSearchResponse {
+  found: boolean
+  lead: LeadSearchResult | null
+}
+
+export async function getFlowOccupancy(flowId: string): Promise<FlowOccupancy> {
+  const { data } = await api.get<FlowOccupancyApiResponse>(`/flows/${flowId}/occupancy`)
+  return data.occupancy
+}
+
+export async function getNodeOccupancy(
+  flowId: string,
+  nodeId: string
+): Promise<{ count: number; leads: LeadSearchResult[] }> {
+  const { data } = await api.get(`/flows/${flowId}/nodes/${nodeId}/occupancy`)
+  return data
+}
+
+export async function getTotalLeadsInFlow(flowId: string): Promise<{ count: number }> {
+  const { data } = await api.get<{ count: number }>(`/flows/${flowId}/leads/count`)
+  return data
+}
+
+export async function searchLeadByPhone(
+  phone: string,
+  flowId?: string
+): Promise<LeadSearchResponse> {
+  const { data } = await api.get<LeadSearchResponse>('/leads/search', {
+    params: { phone, flow_id: flowId },
+  })
+  return data
+}
+
+export async function getLeadsInFlow(
+  flowId: string,
+  nodeId?: string,
+  limit?: number
+): Promise<LeadSearchResult[]> {
+  const { data } = await api.get<LeadSearchResult[]>(`/flows/${flowId}/leads`, {
+    params: { node_id: nodeId, limit },
+  })
+  return data
+}
+
+// WebSocket for real-time occupancy updates
+export function createOccupancyWebSocket(flowId: string): WebSocket {
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+  const host = window.location.host
+  return new WebSocket(`${protocol}//${host}/api/flows/${flowId}/occupancy/ws`)
+}
+
 // Active Flow Settings
 export interface ActiveFlowResponse {
   active_flow_id: string | null

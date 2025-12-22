@@ -3,7 +3,7 @@ import { Handle, Position, type NodeProps } from '@xyflow/react'
 import { Clock } from 'lucide-react'
 import type { CustomNode } from '@/types/flow'
 import OccupancyBadge from '@/components/ui/OccupancyBadge'
-import { useNodeOccupancy } from '@/contexts/OccupancyContext'
+import { useNodeOccupancy } from '@/hooks/useOccupancyContext'
 
 /**
  * Simple delay node - waits for a specified time before continuing

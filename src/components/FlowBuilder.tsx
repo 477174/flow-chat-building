@@ -196,9 +196,18 @@ export default function FlowBuilder() {
 
         {/* Main canvas */}
         <div className="flex-1 flex flex-col">
-          <Toolbar />
+          {/* Toolbar with occupancy controls */}
+          <div className="flex items-center justify-between bg-white border-b border-gray-200">
+            <Toolbar />
+            <div className="px-4 py-2">
+              <OccupancyControls
+                showLeadSearch={showLeadSearch}
+                onToggleLeadSearch={() => setShowLeadSearch(!showLeadSearch)}
+              />
+            </div>
+          </div>
 
-          <div ref={reactFlowWrapper} className="flex-1">
+          <div ref={reactFlowWrapper} className="flex-1 relative">
             <ReactFlow
               nodes={nodes}
               edges={coloredEdges}
@@ -264,25 +273,17 @@ export default function FlowBuilder() {
               <Panel position="top-left" className="m-2">
                 <NodePalette />
               </Panel>
-
-              {/* Occupancy controls */}
-              <Panel position="top-right" className="m-2">
-                <OccupancyControls
-                  showLeadSearch={showLeadSearch}
-                  onToggleLeadSearch={() => setShowLeadSearch(!showLeadSearch)}
-                />
-              </Panel>
-
-              {/* Lead search panel */}
-              {showLeadSearch && (
-                <Panel position="top-right" className="m-2 mt-14">
-                  <LeadSearchPanel
-                    flowId={flowId}
-                    onClose={() => setShowLeadSearch(false)}
-                  />
-                </Panel>
-              )}
             </ReactFlow>
+
+            {/* Lead search panel - positioned absolutely */}
+            {showLeadSearch && (
+              <div className="absolute top-4 right-4 z-50">
+                <LeadSearchPanel
+                  flowId={flowId}
+                  onClose={() => setShowLeadSearch(false)}
+                />
+              </div>
+            )}
           </div>
         </div>
 
@@ -344,32 +345,35 @@ interface OccupancyControlsProps {
 
 function OccupancyControls({ showLeadSearch, onToggleLeadSearch }: OccupancyControlsProps) {
   const occupancy = useOccupancyContext()
+  const totalLeads = occupancy?.totalLeads ?? 0
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-2 flex items-center gap-2">
-      {/* Total leads badge */}
-      {occupancy && occupancy.totalLeads > 0 && (
-        <div className="flex items-center gap-1.5 px-2 py-1 bg-green-100 rounded-md">
-          <Users className="w-4 h-4 text-green-600" />
-          <span className="text-sm font-medium text-green-700">
-            {occupancy.totalLeads} lead{occupancy.totalLeads !== 1 ? 's' : ''}
-          </span>
-        </div>
-      )}
+      {/* Total leads badge - always show */}
+      <div className={`flex items-center gap-1.5 px-2 py-1 rounded-md ${
+        totalLeads > 0 ? 'bg-green-100' : 'bg-gray-100'
+      }`}>
+        <Users className={`w-4 h-4 ${totalLeads > 0 ? 'text-green-600' : 'text-gray-400'}`} />
+        <span className={`text-sm font-medium ${totalLeads > 0 ? 'text-green-700' : 'text-gray-500'}`}>
+          {totalLeads} lead{totalLeads !== 1 ? 's' : ''}
+        </span>
+      </div>
 
       {/* Search button */}
       <button
+        type="button"
         onClick={onToggleLeadSearch}
         className={`
-          p-2 rounded-md transition-colors
+          flex items-center gap-1.5 px-2 py-1.5 rounded-md transition-colors
           ${showLeadSearch
-            ? 'bg-blue-100 text-blue-600'
-            : 'hover:bg-gray-100 text-gray-600'
+            ? 'bg-blue-500 text-white'
+            : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
           }
         `}
         title="Buscar lead por telefone"
       >
         {showLeadSearch ? <X className="w-4 h-4" /> : <Search className="w-4 h-4" />}
+        <span className="text-sm font-medium">Buscar</span>
       </button>
     </div>
   )

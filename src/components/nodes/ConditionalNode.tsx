@@ -3,6 +3,8 @@ import { GitBranch } from "lucide-react";
 import { memo } from "react";
 import type { CustomNode, FlowCondition } from "@/types/flow";
 import { useFlowStore } from "@/stores/flowStore";
+import OccupancyBadge from "@/components/ui/OccupancyBadge";
+import { useNodeOccupancy } from "@/hooks/useOccupancyContext";
 
 function getOperatorLabel(operator: string): string {
 	switch (operator) {
@@ -29,9 +31,10 @@ function getOperatorLabel(operator: string): string {
 	}
 }
 
-function ConditionalNode({ data, selected }: NodeProps<CustomNode>) {
+function ConditionalNode({ id, data, selected }: NodeProps<CustomNode>) {
 	const conditions = (data.conditions as FlowCondition[] | undefined) ?? [];
 	const nodes = useFlowStore((state) => state.nodes);
+	const occupancyCount = useNodeOccupancy(id);
 
 	// Look up variable label from nodes if not stored in condition
 	const getVariableLabel = (condition: FlowCondition): string => {
@@ -45,10 +48,11 @@ function ConditionalNode({ data, selected }: NodeProps<CustomNode>) {
 	return (
 		<div
 			className={`
-        min-w-[220px] max-w-[300px] rounded-lg shadow-md bg-white border-2
+        relative min-w-[220px] max-w-[300px] rounded-lg shadow-md bg-white border-2
         ${selected ? "border-teal-500" : "border-gray-200"}
       `}
 		>
+			<OccupancyBadge count={occupancyCount} />
 			<Handle
 				type="target"
 				position={Position.Top}
