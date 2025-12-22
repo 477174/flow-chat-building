@@ -61,8 +61,8 @@ export default function FlowList() {
     if (!confirm) return
 
     try {
-      await deleteFlow(flow._id)
-      if (flowId === flow._id) {
+      await deleteFlow(flow.id)
+      if (flowId === flow.id) {
         resetFlow()
       }
       fetchFlows()
@@ -75,7 +75,7 @@ export default function FlowList() {
   const handleDuplicateFlow = async (flow: FlowTemplate, e: React.MouseEvent) => {
     e.stopPropagation()
     try {
-      await duplicateFlow(flow._id)
+      await duplicateFlow(flow.id)
       fetchFlows()
     } catch (error) {
       console.error('Failed to duplicate flow:', error)
@@ -116,11 +116,11 @@ export default function FlowList() {
           <div className="space-y-1">
             {flows.map((flow) => (
               <div
-                key={flow._id}
+                key={flow.id}
                 onClick={() => handleSelectFlow(flow)}
                 className={`
                   group flex items-center gap-2 p-2 rounded-lg cursor-pointer
-                  ${flowId === flow._id ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}
+                  ${flowId === flow.id ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}
                 `}
               >
                 <FileText className="w-4 h-4 flex-shrink-0" />

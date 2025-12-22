@@ -250,9 +250,9 @@ export const useFlowStore = create<FlowState>((set) => ({
     })),
 
   // Flow actions
-  loadFlow: (flow) =>
+  loadFlow: (flow) => {
     set({
-      flowId: flow._id,
+      flowId: flow.id,
       flowName: flow.name,
       flowDescription: flow.description ?? '',
       isGlobal: flow.is_global,
@@ -276,7 +276,8 @@ export const useFlowStore = create<FlowState>((set) => ({
       isDirty: false,
       selectedNodeId: null,
       isPanelOpen: false,
-    }),
+    })
+  },
 
   resetFlow: () =>
     set({

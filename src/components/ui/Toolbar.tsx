@@ -79,7 +79,7 @@ export default function Toolbar() {
       } else {
         // Create new flow
         const savedFlow = await createFlow(flowData)
-        setFlowId(savedFlow._id)
+        setFlowId(savedFlow.id)
       }
       markClean()
     } catch (error) {
@@ -151,7 +151,7 @@ export default function Toolbar() {
         const flowData = JSON.parse(text)
 
         loadFlow({
-          _id: '',
+          id: '',
           name: flowData.name || 'Fluxo Importado',
           description: flowData.description || '',
           nodes: flowData.nodes || [],
