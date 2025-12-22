@@ -235,6 +235,37 @@ export default function NodePanel() {
           />
         )}
 
+        {/* Smart Understanding Toggle (for button, option_list) */}
+        {(type === 'button' || type === 'option_list') && (
+          <div className="border-t border-gray-200 pt-4">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <h4 className="text-sm font-medium text-gray-700">Entendimento Inteligente</h4>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Usa IA para interpretar respostas em texto
+                </p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={data.smart_understanding_enabled === true}
+                  onChange={(e) => {
+                    updateNodeData(node.id, { smart_understanding_enabled: e.target.checked })
+                  }}
+                  className="sr-only peer"
+                />
+                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-violet-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-violet-500"></div>
+              </label>
+            </div>
+
+            {data.smart_understanding_enabled && (
+              <p className="text-xs text-violet-600 bg-violet-50 p-2 rounded">
+                Quando ativado, se o usuário responder com texto livre ao invés de clicar em uma opção, a IA irá interpretar a resposta e selecionar a opção mais adequada automaticamente.
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Timeout Configuration (for message, button, option_list) */}
         {(type === 'message' || type === 'button' || type === 'option_list') && (
           <div className="border-t border-gray-200 pt-4">

@@ -92,6 +92,8 @@ export interface FlowNodeData extends Record<string, unknown> {
   list_title?: string
   list_button_label?: string
   options?: FlowListOption[]
+  // Smart understanding (for button, option_list)
+  smart_understanding_enabled?: boolean     // Uses AI to interpret text responses
 }
 
 export interface FlowNodePosition {
@@ -116,7 +118,7 @@ export interface FlowEdgeBase {
 }
 
 export interface FlowTemplate {
-  _id: string
+  id: string
   name: string
   description?: string
   nodes: FlowNodeBase[]
@@ -167,7 +169,7 @@ export interface FlowSimulationMessage {
 }
 
 export interface FlowSimulation {
-  _id: string
+  id: string
   flow_id: string
   client_id?: string
   status: FlowSimulationStatus
