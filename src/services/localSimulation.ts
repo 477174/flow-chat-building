@@ -13,6 +13,7 @@ import {
   type FlowSimulationInput,
   type FlowButtonOption,
   type FlowListOption,
+  type SemanticCondition,
 } from '@/types/flow'
 import type { Node, Edge } from '@xyflow/react'
 
@@ -173,6 +174,17 @@ function processNode(
       break
     }
 
+    case FlowNodeType.SEMANTIC_CONDITIONS: {
+      // Send message if content exists
+      if (data.content) {
+        const content = substituteVariables(data.content, state.variables)
+        state.messages.push(createMessage(id, 'outgoing', content))
+      }
+      // Wait for user input (semantic matching happens in backend, local sim just waits)
+      state.status = FlowSimulationStatus.WAITING_INPUT
+      break
+    }
+
     case FlowNodeType.END: {
       state.status = FlowSimulationStatus.COMPLETED
       break
@@ -298,6 +310,17 @@ export function processLocalInput(
     }
   } else if (currentNode.type === FlowNodeType.WAIT_RESPONSE) {
     nextNodeId = currentNode.data.default_next_node_id ?? getNextNodeFromEdge(edges, currentNode.id)
+  } else if (currentNode.type === FlowNodeType.SEMANTIC_CONDITIONS) {
+    // In local simulation, we can't do semantic matching - just use first condition or default
+    // In production, this would use the backend's semantic vector store
+    const conditions = (currentNode.data.semantic_conditions ?? []) as SemanticCondition[]
+    if (conditions.length > 0 && conditions[0].next_node_id) {
+      // Try first condition's edge
+      nextNodeId = getNextNodeFromEdge(edges, currentNode.id, conditions[0].id)
+    }
+    if (!nextNodeId) {
+      nextNodeId = currentNode.data.default_next_node_id ?? getNextNodeFromEdge(edges, currentNode.id, 'default')
+    }
   }
 
   if (nextNodeId) {
