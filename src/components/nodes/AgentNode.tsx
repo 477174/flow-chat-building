@@ -7,7 +7,6 @@ import { useNodeOccupancy } from "@/hooks/useOccupancyContext";
 
 function AgentNode({ id, data, selected }: NodeProps<CustomNode>) {
 	const occupancyCount = useNodeOccupancy(id);
-	const model = (data.agent_model as string) || "gpt-4o";
 	const hasInstructions = Boolean(data.agent_instructions);
 	const maxTurns = data.agent_max_turns as number | undefined;
 	const exitKeywords = (data.agent_exit_keywords as string[]) || [];
@@ -31,16 +30,6 @@ function AgentNode({ id, data, selected }: NodeProps<CustomNode>) {
 				<span className="font-medium text-sm text-purple-800">
 					{(data.label as string) || "Agente IA"}
 				</span>
-			</div>
-
-			{/* Model indicator */}
-			<div className="px-3 py-2 border-b border-gray-100">
-				<div className="flex items-center gap-2">
-					<span className="text-xs text-gray-500">Modelo:</span>
-					<span className="text-xs font-medium text-purple-700 bg-purple-100 px-2 py-0.5 rounded">
-						{model}
-					</span>
-				</div>
 			</div>
 
 			{/* Instructions preview */}

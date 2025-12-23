@@ -1,4 +1,5 @@
-import { useNodes, type EdgeProps, type Edge } from '@xyflow/react'
+import { memo, useMemo } from 'react'
+import { type Edge, type EdgeProps,type ReactFlowState, useStore } from '@xyflow/react'
 import { getSmartEdge, svgDrawSmoothLinePath } from '@tisoap/react-flow-smart-edge'
 
 interface SmartColoredEdgeData extends Record<string, unknown> {
@@ -8,11 +9,22 @@ interface SmartColoredEdgeData extends Record<string, unknown> {
 
 type SmartColoredEdge = Edge<SmartColoredEdgeData>
 
+// Selector to get only node positions (not all node data)
+// This reduces re-renders by only triggering when positions change
+const nodesSelector = (state: ReactFlowState) =>
+  state.nodes.map(node => ({
+    id: node.id,
+    position: node.position,
+    width: node.measured?.width ?? node.width ?? 150,
+    height: node.measured?.height ?? node.height ?? 40,
+  }))
+
 /**
  * Smart edge component that routes around nodes with colored stroke
  * Uses A* pathfinding to avoid intersecting with other nodes
+ * Memoized to prevent excessive re-renders
  */
-export function SmartColoredEdge(props: EdgeProps<SmartColoredEdge>) {
+function SmartColoredEdgeComponent(props: EdgeProps<SmartColoredEdge>) {
   const {
     id,
     sourceX,
@@ -26,35 +38,46 @@ export function SmartColoredEdge(props: EdgeProps<SmartColoredEdge>) {
     selected,
   } = props
 
-  const nodes = useNodes()
+  // Use selector to only subscribe to position changes
+  const nodePositions = useStore(nodesSelector)
 
-  // Get smart edge path that avoids nodes
-  const getSmartEdgeResponse = getSmartEdge({
-    sourcePosition,
-    targetPosition,
-    sourceX,
-    sourceY,
-    targetX,
-    targetY,
-    nodes,
-    options: {
-      drawEdge: svgDrawSmoothLinePath,
-    },
-  })
+  // Memoize the smart edge calculation
+  const edgePath = useMemo(() => {
+    // Convert minimal node data to format expected by getSmartEdge
+    const nodes = nodePositions.map(n => ({
+      id: n.id,
+      position: n.position,
+      width: n.width,
+      height: n.height,
+      data: {},
+      type: 'default',
+    }))
 
-  // Fallback to straight line if smart edge fails or returns an error
-  let edgePath: string
-  if (getSmartEdgeResponse === null || getSmartEdgeResponse instanceof Error) {
-    edgePath = `M ${sourceX} ${sourceY} L ${targetX} ${targetY}`
-  } else {
-    edgePath = getSmartEdgeResponse.svgPathString
-  }
+    const response = getSmartEdge({
+      sourcePosition,
+      targetPosition,
+      sourceX,
+      sourceY,
+      targetX,
+      targetY,
+      nodes,
+      options: {
+        drawEdge: svgDrawSmoothLinePath,
+      },
+    })
 
-  // Get color from data - this comes from useColoredEdges hook
+    // Fallback to straight line if smart edge fails
+    if (response === null || response instanceof Error) {
+      return `M ${sourceX} ${sourceY} L ${targetX} ${targetY}`
+    }
+    return response.svgPathString
+  }, [nodePositions, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition])
+
+  // Get color from data
   const strokeColor = data?.strokeColor ?? '#b1b1b7'
   const strokeWidth = data?.strokeWidth ?? 2
 
-  // Selection border dimensions - thin border with gap
+  // Selection border dimensions
   const borderWidth = strokeWidth + 6
   const gapWidth = strokeWidth + 4
 
@@ -71,7 +94,6 @@ export function SmartColoredEdge(props: EdgeProps<SmartColoredEdge>) {
       {/* Selection border - only visible when selected */}
       {selected && (
         <>
-          {/* Outer border - same color as edge but less opaque */}
           <path
             d={edgePath}
             fill="none"
@@ -80,7 +102,6 @@ export function SmartColoredEdge(props: EdgeProps<SmartColoredEdge>) {
             strokeLinecap="round"
             style={{ opacity: 0.4 }}
           />
-          {/* Gap - uses background color to create floating effect */}
           <path
             d={edgePath}
             fill="none"
@@ -106,3 +127,6 @@ export function SmartColoredEdge(props: EdgeProps<SmartColoredEdge>) {
     </>
   )
 }
+
+// Memoize the entire component to prevent re-renders when parent updates
+export const SmartColoredEdge = memo(SmartColoredEdgeComponent)

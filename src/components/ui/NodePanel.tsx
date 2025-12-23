@@ -819,15 +819,6 @@ function convertToSeconds(value: number, unit: TimeoutUnit): number {
   }
 }
 
-const AGENT_MODELS = [
-  { value: 'gpt-4o', label: 'GPT-4o (OpenAI)' },
-  { value: 'gpt-4o-mini', label: 'GPT-4o Mini (OpenAI)' },
-  { value: 'gpt-4-turbo', label: 'GPT-4 Turbo (OpenAI)' },
-  { value: 'claude-3-5-sonnet-latest', label: 'Claude 3.5 Sonnet (Anthropic)' },
-  { value: 'claude-3-opus-latest', label: 'Claude 3 Opus (Anthropic)' },
-  { value: 'claude-3-haiku-latest', label: 'Claude 3 Haiku (Anthropic)' },
-]
-
 interface AgentNodeEditorProps {
   data: Record<string, unknown>
   onChange: (updates: Record<string, unknown>) => void
@@ -863,24 +854,6 @@ function AgentNodeEditor({ data, onChange, availableVariables }: AgentNodeEditor
           placeholder="Mensagem enviada quando o lead entra no agente..."
           rows={2}
         />
-      </div>
-
-      {/* Model Selection */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Modelo de IA
-        </label>
-        <select
-          value={(data.agent_model as string) ?? 'gpt-4o'}
-          onChange={(e) => onChange({ agent_model: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-        >
-          {AGENT_MODELS.map((model) => (
-            <option key={model.value} value={model.value}>
-              {model.label}
-            </option>
-          ))}
-        </select>
       </div>
 
       {/* Instructions */}
