@@ -1,30 +1,17 @@
 import { memo, useMemo } from 'react'
-import { type Edge, type EdgeProps,type ReactFlowState, useStore } from '@xyflow/react'
-import { getSmartEdge, svgDrawSmoothLinePath } from '@tisoap/react-flow-smart-edge'
+import { type Edge, type EdgeProps, getBezierPath } from '@xyflow/react'
 
-interface SmartColoredEdgeData extends Record<string, unknown> {
+interface ColoredEdgeData extends Record<string, unknown> {
   strokeColor?: string
   strokeWidth?: number
 }
 
-type SmartColoredEdge = Edge<SmartColoredEdgeData>
-
-// Selector to get only node positions (not all node data)
-// This reduces re-renders by only triggering when positions change
-const nodesSelector = (state: ReactFlowState) =>
-  state.nodes.map(node => ({
-    id: node.id,
-    position: node.position,
-    width: node.measured?.width ?? node.width ?? 150,
-    height: node.measured?.height ?? node.height ?? 40,
-  }))
+type ColoredEdge = Edge<ColoredEdgeData>
 
 /**
- * Smart edge component that routes around nodes with colored stroke
- * Uses A* pathfinding to avoid intersecting with other nodes
- * Memoized to prevent excessive re-renders
+ * Colored bezier edge component with selection styling
  */
-function SmartColoredEdgeComponent(props: EdgeProps<SmartColoredEdge>) {
+function ColoredEdgeComponent(props: EdgeProps<ColoredEdge>) {
   const {
     id,
     sourceX,
@@ -38,40 +25,18 @@ function SmartColoredEdgeComponent(props: EdgeProps<SmartColoredEdge>) {
     selected,
   } = props
 
-  // Use selector to only subscribe to position changes
-  const nodePositions = useStore(nodesSelector)
-
-  // Memoize the smart edge calculation
+  // Calculate bezier path
   const edgePath = useMemo(() => {
-    // Convert minimal node data to format expected by getSmartEdge
-    const nodes = nodePositions.map(n => ({
-      id: n.id,
-      position: n.position,
-      width: n.width,
-      height: n.height,
-      data: {},
-      type: 'default',
-    }))
-
-    const response = getSmartEdge({
-      sourcePosition,
-      targetPosition,
+    const [path] = getBezierPath({
       sourceX,
       sourceY,
+      sourcePosition,
       targetX,
       targetY,
-      nodes,
-      options: {
-        drawEdge: svgDrawSmoothLinePath,
-      },
+      targetPosition,
     })
-
-    // Fallback to straight line if smart edge fails
-    if (response === null || response instanceof Error) {
-      return `M ${sourceX} ${sourceY} L ${targetX} ${targetY}`
-    }
-    return response.svgPathString
-  }, [nodePositions, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition])
+    return path
+  }, [sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition])
 
   // Get color from data
   const strokeColor = data?.strokeColor ?? '#b1b1b7'
@@ -128,5 +93,5 @@ function SmartColoredEdgeComponent(props: EdgeProps<SmartColoredEdge>) {
   )
 }
 
-// Memoize the entire component to prevent re-renders when parent updates
-export const SmartColoredEdge = memo(SmartColoredEdgeComponent)
+// Memoize the entire component - keep export name for compatibility
+export const SmartColoredEdge = memo(ColoredEdgeComponent)
