@@ -560,6 +560,8 @@ function getDefaultLabel(type: (typeof FlowNodeType)[keyof typeof FlowNodeType])
       return 'Condição'
     case FlowNodeType.SEMANTIC_CONDITIONS:
       return 'Condições Semânticas'
+    case FlowNodeType.CONNECTOR:
+      return 'Conector'
     default:
       return 'Bloco'
   }

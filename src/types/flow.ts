@@ -7,6 +7,7 @@ export const FlowNodeType = {
   WAIT_RESPONSE: 'wait_response',
   CONDITIONAL: 'conditional',
   SEMANTIC_CONDITIONS: 'semantic_conditions',
+  CONNECTOR: 'connector',
   START: 'start',
   END: 'end',
 } as const

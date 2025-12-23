@@ -190,6 +190,18 @@ function processNode(
       break
     }
 
+    case FlowNodeType.CONNECTOR: {
+      // Connector just passes through to the next node
+      const nextId = getNextNodeFromEdge(edges, id)
+      if (nextId) {
+        state.currentNodeId = nextId
+        processNode(state, nodes, edges, stepCount + 1)
+      } else {
+        state.status = FlowSimulationStatus.COMPLETED
+      }
+      break
+    }
+
     default:
       state.status = FlowSimulationStatus.ERROR
   }
