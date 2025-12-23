@@ -101,6 +101,7 @@ export interface FlowNodeData extends Record<string, unknown> {
   options?: FlowListOption[]
   // Smart understanding (for button, option_list)
   smart_understanding_enabled?: boolean     // Uses AI to interpret text responses
+  smart_understanding_fallback_message?: string // Message when understanding fails
   // Semantic conditions (for semantic_conditions node)
   semantic_conditions?: SemanticCondition[] // AI-based routing using embeddings
 }

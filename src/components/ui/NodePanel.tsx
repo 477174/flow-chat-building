@@ -329,9 +329,29 @@ export default function NodePanel() {
             </div>
 
             {data.smart_understanding_enabled && (
-              <p className="text-xs text-violet-600 bg-violet-50 p-2 rounded">
-                Quando ativado, se o usuário responder com texto livre ao invés de clicar em uma opção, a IA irá interpretar a resposta e selecionar a opção mais adequada automaticamente.
-              </p>
+              <>
+                <p className="text-xs text-violet-600 bg-violet-50 p-2 rounded mb-3">
+                  Quando ativado, se o usuário responder com texto livre ao invés de clicar em uma opção, a IA irá interpretar a resposta e selecionar a opção mais adequada automaticamente.
+                </p>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    Mensagem de Fallback (opcional)
+                  </label>
+                  <textarea
+                    value={data.smart_understanding_fallback_message ?? ''}
+                    onChange={(e) =>
+                      updateNodeData(node.id, { smart_understanding_fallback_message: e.target.value })
+                    }
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500 resize-none"
+                    placeholder="Mensagem enviada quando a IA não consegue identificar a opção escolhida..."
+                    rows={3}
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Se não definida, será listado as opções disponíveis automaticamente.
+                  </p>
+                </div>
+              </>
             )}
           </div>
         )}
