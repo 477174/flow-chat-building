@@ -1,10 +1,11 @@
-import { memo, useState } from 'react'
+import { memo } from 'react'
 import { Handle, Position, type NodeProps } from '@xyflow/react'
 import { MessageSquare, Image, FileAudio, Video, FileText, Clock } from 'lucide-react'
 import type { CustomNode, FlowMessageType } from '@/types/flow'
 import VariableTextDisplay from '@/components/ui/VariableTextDisplay'
 import OccupancyBadge from '@/components/ui/OccupancyBadge'
 import { useNodeOccupancy } from '@/hooks/useOccupancyContext'
+import { useInViewport } from '@/hooks/useInViewport'
 
 /**
  * Format timeout seconds to human-readable format
@@ -67,8 +68,8 @@ function MessageNode({ id, data, selected }: NodeProps<CustomNode>) {
   const hasTimeoutConfig = data.timeout_seconds != null // Has config even if disabled
   const occupancyCount = useNodeOccupancy(id)
 
-  // Lazy load iframes only when node is selected (for performance)
-  const [iframeLoaded, setIframeLoaded] = useState(false)
+  // Track viewport visibility for lazy loading media
+  const [mediaContainerRef, isInViewport] = useInViewport<HTMLDivElement>()
 
   // Use wider node for media content
   const hasMedia = mediaUrl && (messageType === 'video' || messageType === 'image' || messageType === 'audio')
@@ -79,17 +80,14 @@ function MessageNode({ id, data, selected }: NodeProps<CustomNode>) {
     // Check if it's a Google Drive URL
     const googleDriveEmbedUrl = getGoogleDriveEmbedUrl(mediaUrl)
 
-    // For Google Drive, show placeholder until selected (lazy load iframes)
-    if (googleDriveEmbedUrl && !selected && !iframeLoaded) {
+    // For Google Drive iframes, only render when in viewport
+    if (googleDriveEmbedUrl && !isInViewport) {
       return (
-        <div className="px-2 pb-2">
-          <div
-            className="w-full aspect-square rounded border border-gray-200 bg-gray-100 flex items-center justify-center cursor-pointer hover:bg-gray-200"
-            onClick={() => setIframeLoaded(true)}
-          >
-            <div className="text-center text-gray-500 text-xs">
-              <Image className="w-8 h-8 mx-auto mb-1 text-gray-400" />
-              Click to load preview
+        <div ref={mediaContainerRef} className="px-2 pb-2">
+          <div className="w-full aspect-square rounded border border-gray-200 bg-gray-100 flex items-center justify-center">
+            <div className="text-center text-gray-400 text-xs">
+              <Image className="w-6 h-6 mx-auto mb-1" />
+              Preview
             </div>
           </div>
         </div>
@@ -100,7 +98,7 @@ function MessageNode({ id, data, selected }: NodeProps<CustomNode>) {
       case 'image':
         if (googleDriveEmbedUrl) {
           return (
-            <div className="px-2 pb-2">
+            <div ref={mediaContainerRef} className="px-2 pb-2">
               <iframe
                 src={googleDriveEmbedUrl}
                 className="w-full aspect-square rounded border border-gray-200"
@@ -129,7 +127,7 @@ function MessageNode({ id, data, selected }: NodeProps<CustomNode>) {
       case 'audio':
         if (googleDriveEmbedUrl) {
           return (
-            <div className="px-2 pb-2">
+            <div ref={mediaContainerRef} className="px-2 pb-2">
               <iframe
                 src={googleDriveEmbedUrl}
                 className="w-full h-20 rounded border border-gray-200"
@@ -156,7 +154,7 @@ function MessageNode({ id, data, selected }: NodeProps<CustomNode>) {
       case 'video':
         if (googleDriveEmbedUrl) {
           return (
-            <div className="px-2 pb-2">
+            <div ref={mediaContainerRef} className="px-2 pb-2">
               <iframe
                 src={googleDriveEmbedUrl}
                 className="w-full aspect-square rounded border border-gray-200"
