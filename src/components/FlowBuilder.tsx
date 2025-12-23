@@ -268,6 +268,8 @@ export default function FlowBuilder() {
                       return '#14b8a6'
                     case 'semantic_conditions':
                       return '#06b6d4'
+                    case 'agent':
+                      return '#8b5cf6'
                     case 'connector':
                       return '#6b7280'
                     default:
@@ -317,6 +319,7 @@ function NodePalette() {
     { type: 'wait_response', label: 'Atraso', color: 'bg-amber-500' },
     { type: 'conditional', label: 'Condição', color: 'bg-teal-500' },
     { type: 'semantic_conditions', label: 'Condições Semânticas', color: 'bg-cyan-500' },
+    { type: 'agent', label: 'Agente IA', color: 'bg-violet-500' },
     { type: 'connector', label: 'Conector', color: 'bg-gray-500' },
     { type: 'end', label: 'Fim', color: 'bg-red-500' },
   ]

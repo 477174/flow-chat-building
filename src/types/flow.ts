@@ -7,6 +7,7 @@ export const FlowNodeType = {
   WAIT_RESPONSE: 'wait_response',
   CONDITIONAL: 'conditional',
   SEMANTIC_CONDITIONS: 'semantic_conditions',
+  AGENT: 'agent',
   CONNECTOR: 'connector',
   START: 'start',
   END: 'end',
@@ -105,6 +106,13 @@ export interface FlowNodeData extends Record<string, unknown> {
   smart_understanding_fallback_message?: string // Message when understanding fails
   // Semantic conditions (for semantic_conditions node)
   semantic_conditions?: SemanticCondition[] // AI-based routing using embeddings
+  // Agent node configuration
+  agent_instructions?: string               // System prompt for the agent
+  agent_model?: string                      // LLM model (e.g., gpt-4o, claude-3-opus)
+  agent_knowledge_base_ids?: string[]       // Knowledge base IDs for RAG
+  agent_max_turns?: number                  // Max turns before auto-exit
+  agent_exit_keywords?: string[]            // Keywords that trigger exit
+  agent_welcome_message?: string            // Initial message sent when entering node
 }
 
 export interface FlowNodePosition {

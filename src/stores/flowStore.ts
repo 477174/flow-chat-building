@@ -560,6 +560,8 @@ function getDefaultLabel(type: (typeof FlowNodeType)[keyof typeof FlowNodeType])
       return 'Condição'
     case FlowNodeType.SEMANTIC_CONDITIONS:
       return 'Condições Semânticas'
+    case FlowNodeType.AGENT:
+      return 'Agente IA'
     case FlowNodeType.CONNECTOR:
       return 'Conector'
     default:

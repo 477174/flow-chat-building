@@ -185,6 +185,20 @@ function processNode(
       break
     }
 
+    case FlowNodeType.AGENT: {
+      // Send welcome message if exists
+      if (data.agent_welcome_message) {
+        const content = substituteVariables(data.agent_welcome_message as string, state.variables)
+        state.messages.push(createMessage(id, 'outgoing', content))
+      } else {
+        // Default message for simulation
+        state.messages.push(createMessage(id, 'outgoing', '🤖 Agente IA ativado. (Simulação local - respostas do agente só funcionam via backend)'))
+      }
+      // Agent requires backend processing, wait for input
+      state.status = FlowSimulationStatus.WAITING_INPUT
+      break
+    }
+
     case FlowNodeType.END: {
       state.status = FlowSimulationStatus.COMPLETED
       break
