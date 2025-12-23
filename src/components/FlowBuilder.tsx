@@ -45,21 +45,20 @@ export default function FlowBuilder() {
   // Sync flow ID with browser URL and history
   useFlowUrlSync()
 
-  const {
-    nodes,
-    edges,
-    onNodesChange,
-    onEdgesChange,
-    onConnect,
-    addNode,
-    selectNode,
-    selectedNodeId,
-    isPanelOpen,
-    isSimulating,
-    setNodes,
-    setEdges,
-    flowId,
-  } = useFlowStore()
+  // Use individual selectors to prevent unnecessary re-renders
+  const nodes = useFlowStore((state) => state.nodes)
+  const edges = useFlowStore((state) => state.edges)
+  const onNodesChange = useFlowStore((state) => state.onNodesChange)
+  const onEdgesChange = useFlowStore((state) => state.onEdgesChange)
+  const onConnect = useFlowStore((state) => state.onConnect)
+  const addNode = useFlowStore((state) => state.addNode)
+  const selectNode = useFlowStore((state) => state.selectNode)
+  const selectedNodeId = useFlowStore((state) => state.selectedNodeId)
+  const isPanelOpen = useFlowStore((state) => state.isPanelOpen)
+  const isSimulating = useFlowStore((state) => state.isSimulating)
+  const setNodes = useFlowStore((state) => state.setNodes)
+  const setEdges = useFlowStore((state) => state.setEdges)
+  const flowId = useFlowStore((state) => state.flowId)
 
   // Filter out timeout edges when timeout is disabled on source node
   const visibleEdges = useMemo(() => {

@@ -10,7 +10,11 @@ import { getFlow } from '@/services/api'
  * - Handles browser back/forward navigation
  */
 export function useFlowUrlSync() {
-  const { flowId, loadFlow, resetFlow, isDirty } = useFlowStore()
+  // Use individual selectors to prevent unnecessary re-renders
+  const flowId = useFlowStore((state) => state.flowId)
+  const loadFlow = useFlowStore((state) => state.loadFlow)
+  const resetFlow = useFlowStore((state) => state.resetFlow)
+  const isDirty = useFlowStore((state) => state.isDirty)
   const isNavigating = useRef(false)
   const initialLoadDone = useRef(false)
 
@@ -81,7 +85,7 @@ export function useFlowUrlSync() {
       const targetFlowId = event.state?.flowId || getFlowIdFromUrl()
 
       if (targetFlowId && targetFlowId !== flowId) {
-        if (isDirty()) {
+        if (isDirty) {
           const confirm = window.confirm(
             'Você tem alterações não salvas. Deseja continuar?'
           )
@@ -94,7 +98,7 @@ export function useFlowUrlSync() {
         }
         await loadFlowById(targetFlowId)
       } else if (!targetFlowId && flowId) {
-        if (isDirty()) {
+        if (isDirty) {
           const confirm = window.confirm(
             'Você tem alterações não salvas. Deseja continuar?'
           )

@@ -8,7 +8,12 @@ export default function FlowList() {
   const [flows, setFlows] = useState<FlowTemplate[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
-  const { flowId, loadFlow, resetFlow, isDirty, saveVersion } = useFlowStore()
+  // Use individual selectors to prevent unnecessary re-renders
+  const flowId = useFlowStore((state) => state.flowId)
+  const loadFlow = useFlowStore((state) => state.loadFlow)
+  const resetFlow = useFlowStore((state) => state.resetFlow)
+  const isDirty = useFlowStore((state) => state.isDirty)
+  const saveVersion = useFlowStore((state) => state.saveVersion)
 
   const fetchFlows = async () => {
     setIsLoading(true)
@@ -34,7 +39,7 @@ export default function FlowList() {
   }, [saveVersion])
 
   const handleSelectFlow = (flow: FlowTemplate) => {
-    if (isDirty()) {
+    if (isDirty) {
       const confirm = window.confirm(
         'Você tem alterações não salvas. Tem certeza que deseja trocar de fluxo?'
       )
@@ -44,7 +49,7 @@ export default function FlowList() {
   }
 
   const handleNewFlow = () => {
-    if (isDirty()) {
+    if (isDirty) {
       const confirm = window.confirm(
         'Você tem alterações não salvas. Tem certeza que deseja criar um novo fluxo?'
       )

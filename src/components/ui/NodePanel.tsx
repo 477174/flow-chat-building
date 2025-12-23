@@ -18,12 +18,17 @@ import VariablePanel from './VariablePanel'
 import ComboboxInput, { type ComboboxOption } from './ComboboxInput'
 
 export default function NodePanel() {
-  const { nodes, selectedNodeId, updateNodeData, deleteNode, togglePanel } =
-    useFlowStore()
+  // Use individual selectors to prevent unnecessary re-renders
+  const selectedNodeId = useFlowStore((state) => state.selectedNodeId)
+  const node = useFlowStore((state) =>
+    state.nodes.find((n) => n.id === state.selectedNodeId)
+  )
+  const updateNodeData = useFlowStore((state) => state.updateNodeData)
+  const deleteNode = useFlowStore((state) => state.deleteNode)
+  const togglePanel = useFlowStore((state) => state.togglePanel)
+
   const [showVariablePanel, setShowVariablePanel] = useState(false)
   const [showLeadsSection, setShowLeadsSection] = useState(true)
-
-  const node = nodes.find((n) => n.id === selectedNodeId)
   const availableVariables = useAvailableVariables(selectedNodeId)
 
   // Get leads from context (no API calls needed)

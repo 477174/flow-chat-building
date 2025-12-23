@@ -5,23 +5,16 @@ import { getActiveFlow, setActiveFlow, clearActiveFlow, createFlow, updateFlow }
 import type { FlowNodeType, FlowNodeBase, FlowEdgeBase } from '@/types/flow'
 
 export default function Toolbar() {
-  const {
-    flowId,
-    flowName,
-    flowDescription,
-    isGlobal,
-    isActive,
-    tags,
-    nodes,
-    edges,
-    viewport,
-    isDirty,
-    markClean,
-    loadFlow,
-    startSimulation,
-    setFlowMeta,
-    setFlowId,
-  } = useFlowStore()
+  // Use individual selectors to prevent unnecessary re-renders
+  // Only subscribe to state that affects rendering
+  const flowId = useFlowStore((state) => state.flowId)
+  const flowName = useFlowStore((state) => state.flowName)
+  const isDirty = useFlowStore((state) => state.isDirty)
+  const setFlowMeta = useFlowStore((state) => state.setFlowMeta)
+  const setFlowId = useFlowStore((state) => state.setFlowId)
+  const markClean = useFlowStore((state) => state.markClean)
+  const loadFlow = useFlowStore((state) => state.loadFlow)
+  const startSimulation = useFlowStore((state) => state.startSimulation)
 
   const [activeFlowId, setActiveFlowId] = useState<string | null>(null)
   const [isSettingActive, setIsSettingActive] = useState(false)
@@ -44,14 +37,17 @@ export default function Toolbar() {
   }, [])
 
   const handleSave = async () => {
-    const flowNodes: FlowNodeBase[] = nodes.map((n) => ({
+    // Get current state at save time (not subscribed to avoid re-renders)
+    const state = useFlowStore.getState()
+
+    const flowNodes: FlowNodeBase[] = state.nodes.map((n) => ({
       id: n.id,
       type: n.type as FlowNodeType,
       position: n.position,
       data: n.data,
     }))
 
-    const flowEdges: FlowEdgeBase[] = edges.map((e) => ({
+    const flowEdges: FlowEdgeBase[] = state.edges.map((e) => ({
       id: e.id,
       source: e.source,
       target: e.target,
@@ -61,14 +57,14 @@ export default function Toolbar() {
     }))
 
     const flowData = {
-      name: flowName,
-      description: flowDescription,
+      name: state.flowName,
+      description: state.flowDescription,
       nodes: flowNodes,
       edges: flowEdges,
-      viewport,
-      is_global: isGlobal,
-      is_active: isActive,
-      tags,
+      viewport: state.viewport,
+      is_global: state.isGlobal,
+      is_active: state.isActive,
+      tags: state.tags,
     }
 
     setIsSaving(true)
@@ -99,14 +95,17 @@ export default function Toolbar() {
   }
 
   const handleExport = () => {
-    const flowNodes: FlowNodeBase[] = nodes.map((n) => ({
+    // Get current state at export time (not subscribed to avoid re-renders)
+    const state = useFlowStore.getState()
+
+    const flowNodes: FlowNodeBase[] = state.nodes.map((n) => ({
       id: n.id,
       type: n.type as FlowNodeType,
       position: n.position,
       data: n.data,
     }))
 
-    const flowEdges: FlowEdgeBase[] = edges.map((e) => ({
+    const flowEdges: FlowEdgeBase[] = state.edges.map((e) => ({
       id: e.id,
       source: e.source,
       target: e.target,
@@ -116,14 +115,14 @@ export default function Toolbar() {
     }))
 
     const flowData = {
-      name: flowName,
-      description: flowDescription,
+      name: state.flowName,
+      description: state.flowDescription,
       nodes: flowNodes,
       edges: flowEdges,
-      viewport,
-      is_global: isGlobal,
-      is_active: isActive,
-      tags,
+      viewport: state.viewport,
+      is_global: state.isGlobal,
+      is_active: state.isActive,
+      tags: state.tags,
     }
 
     // Create and download JSON file
@@ -131,7 +130,7 @@ export default function Toolbar() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `${flowName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_flow.json`
+    a.download = `${state.flowName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_flow.json`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -215,7 +214,7 @@ export default function Toolbar() {
             className="text-lg font-semibold text-gray-800 bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-1"
             placeholder="Nome do fluxo"
           />
-          {isDirty() && (
+          {isDirty && (
             <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded">
               Não salvo
             </span>
@@ -253,7 +252,7 @@ export default function Toolbar() {
         <button
           type="button"
           onClick={handleSave}
-          disabled={isSaving || !isDirty()}
+          disabled={isSaving || !isDirty}
           className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
           title="Salvar fluxo no servidor"
         >
