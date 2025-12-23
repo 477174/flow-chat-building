@@ -5,7 +5,7 @@ import type { CustomNode } from '@/types/flow'
 import OccupancyBadge from '@/components/ui/OccupancyBadge'
 import { useNodeOccupancy } from '@/hooks/useOccupancyContext'
 
-function ConnectorNode({ id, data, selected }: NodeProps<CustomNode>) {
+function ConnectorNode({ id, selected }: NodeProps<CustomNode>) {
   const occupancyCount = useNodeOccupancy(id)
 
   return (
