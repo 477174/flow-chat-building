@@ -40,7 +40,7 @@ export function useColoredEdges<T extends Edge>(
 
     return edges.map((edge, index) => ({
       ...edge,
-      type: 'colored',
+      type: 'smart',
       data: {
         ...edge.data,
         strokeColor: colors[index],

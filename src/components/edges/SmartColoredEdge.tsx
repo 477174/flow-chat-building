@@ -1,17 +1,18 @@
-import { getBezierPath, type EdgeProps, type Edge } from '@xyflow/react'
+import { useNodes, type EdgeProps, type Edge } from '@xyflow/react'
+import { getSmartEdge, svgDrawSmoothLinePath } from '@tisoap/react-flow-smart-edge'
 
-interface ColoredEdgeData extends Record<string, unknown> {
+interface SmartColoredEdgeData extends Record<string, unknown> {
   strokeColor?: string
   strokeWidth?: number
 }
 
-type ColoredEdge = Edge<ColoredEdgeData>
+type SmartColoredEdge = Edge<SmartColoredEdgeData>
 
 /**
- * Custom edge component with colored stroke and floating selection border
- * When selected, shows an outer border with a gap between it and the edge
+ * Smart edge component that routes around nodes with colored stroke
+ * Uses A* pathfinding to avoid intersecting with other nodes
  */
-export function ColoredEdge(props: EdgeProps<ColoredEdge>) {
+export function SmartColoredEdge(props: EdgeProps<SmartColoredEdge>) {
   const {
     id,
     sourceX,
@@ -25,22 +26,37 @@ export function ColoredEdge(props: EdgeProps<ColoredEdge>) {
     selected,
   } = props
 
-  const [edgePath] = getBezierPath({
+  const nodes = useNodes()
+
+  // Get smart edge path that avoids nodes
+  const getSmartEdgeResponse = getSmartEdge({
+    sourcePosition,
+    targetPosition,
     sourceX,
     sourceY,
-    sourcePosition,
     targetX,
     targetY,
-    targetPosition,
+    nodes,
+    options: {
+      drawEdge: svgDrawSmoothLinePath,
+    },
   })
+
+  // Fallback to straight line if smart edge fails or returns an error
+  let edgePath: string
+  if (getSmartEdgeResponse === null || getSmartEdgeResponse instanceof Error) {
+    edgePath = `M ${sourceX} ${sourceY} L ${targetX} ${targetY}`
+  } else {
+    edgePath = getSmartEdgeResponse.svgPathString
+  }
 
   // Get color from data - this comes from useColoredEdges hook
   const strokeColor = data?.strokeColor ?? '#b1b1b7'
   const strokeWidth = data?.strokeWidth ?? 2
 
-  // Selection border dimensions - thin black border with gap
-  const borderWidth = strokeWidth + 6 // Outer border
-  const gapWidth = strokeWidth + 4 // Gap (background color)
+  // Selection border dimensions - thin border with gap
+  const borderWidth = strokeWidth + 6
+  const gapWidth = strokeWidth + 4
 
   return (
     <>
