@@ -31,7 +31,7 @@ function OptionListNode({ id, data, selected }: NodeProps<CustomNode>) {
   return (
     <div
       className={`
-        relative min-w-[240px] max-w-[320px] rounded-lg shadow-md bg-white border-2
+        relative min-w-[240px] max-w-[400px] rounded-lg shadow-md bg-white border-2
         ${selected ? 'border-indigo-500' : 'border-gray-200'}
       `}
     >
@@ -51,7 +51,7 @@ function OptionListNode({ id, data, selected }: NodeProps<CustomNode>) {
 
       {content && (
         <div className="px-3 py-2 border-b border-gray-100">
-          <div className="text-sm text-gray-600 line-clamp-2">
+          <div className="text-sm text-gray-600 whitespace-pre-wrap break-words">
             <VariableTextDisplay value={content} />
           </div>
         </div>
@@ -67,7 +67,7 @@ function OptionListNode({ id, data, selected }: NodeProps<CustomNode>) {
             >
               <span className="text-indigo-800 block">{option.title}</span>
               {option.description && (
-                <span className="text-indigo-600 text-xs block truncate">{option.description}</span>
+                <span className="text-indigo-600 text-xs block whitespace-pre-wrap break-words">{option.description}</span>
               )}
               <Handle
                 type="source"

@@ -48,7 +48,7 @@ function ConditionalNode({ id, data, selected }: NodeProps<CustomNode>) {
 	return (
 		<div
 			className={`
-        relative min-w-[220px] max-w-[300px] rounded-lg shadow-md bg-white border-2
+        relative min-w-[220px] max-w-[400px] rounded-lg shadow-md bg-white border-2
         ${selected ? "border-teal-500" : "border-gray-200"}
       `}
 		>
@@ -74,8 +74,7 @@ function ConditionalNode({ id, data, selected }: NodeProps<CustomNode>) {
 							className="relative flex items-center px-3 py-1.5 bg-teal-50 border border-teal-200 rounded text-xs"
 						>
 							<span
-								className="font-mono truncate block w-full pr-2"
-								title={`${getVariableLabel(condition)} ${getOperatorLabel(condition.operator)} ${condition.value ?? ""}`}
+								className="font-mono whitespace-pre-wrap break-words block w-full pr-2"
 							>
 								<span className="text-blue-600 font-medium">{getVariableLabel(condition)}</span>
 								{" "}

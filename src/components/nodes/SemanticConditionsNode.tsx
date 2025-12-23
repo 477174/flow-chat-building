@@ -12,7 +12,7 @@ function SemanticConditionsNode({ id, data, selected }: NodeProps<CustomNode>) {
 	return (
 		<div
 			className={`
-        relative min-w-[220px] max-w-[300px] rounded-lg shadow-md bg-white border-2
+        relative min-w-[220px] max-w-[400px] rounded-lg shadow-md bg-white border-2
         ${selected ? "border-cyan-500" : "border-gray-200"}
       `}
 		>
@@ -33,7 +33,7 @@ function SemanticConditionsNode({ id, data, selected }: NodeProps<CustomNode>) {
 			{/* Optional prompt/message content */}
 			{data.content && (
 				<div className="px-3 py-2 border-b border-gray-100">
-					<p className="text-xs text-gray-600 line-clamp-2">
+					<p className="text-xs text-gray-600 whitespace-pre-wrap break-words">
 						{data.content as string}
 					</p>
 				</div>
