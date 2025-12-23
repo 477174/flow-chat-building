@@ -51,6 +51,113 @@ function hydrateNodeData(data: FlowNodeData): FlowNodeData {
   return data
 }
 
+/**
+ * Snapshot of flow state for change detection
+ */
+interface FlowSnapshot {
+  nodes: FlowNode[]
+  edges: FlowEdge[]
+  flowName: string
+  flowDescription: string
+  isGlobal: boolean
+  isActive: boolean
+  tags: string[]
+  variableTransforms: VariableTransformScope
+}
+
+/**
+ * Create a snapshot from current state
+ */
+function createSnapshot(state: {
+  nodes: FlowNode[]
+  edges: FlowEdge[]
+  flowName: string
+  flowDescription: string
+  isGlobal: boolean
+  isActive: boolean
+  tags: string[]
+  variableTransforms: VariableTransformScope
+}): FlowSnapshot {
+  return {
+    nodes: JSON.parse(JSON.stringify(state.nodes)),
+    edges: JSON.parse(JSON.stringify(state.edges)),
+    flowName: state.flowName,
+    flowDescription: state.flowDescription,
+    isGlobal: state.isGlobal,
+    isActive: state.isActive,
+    tags: [...state.tags],
+    variableTransforms: JSON.parse(JSON.stringify(state.variableTransforms)),
+  }
+}
+
+/**
+ * Compare two nodes for equality (ignoring transient properties like selected, dragging)
+ */
+function nodesEqual(a: FlowNode[], b: FlowNode[]): boolean {
+  if (a.length !== b.length) return false
+
+  const normalize = (node: FlowNode) => ({
+    id: node.id,
+    type: node.type,
+    position: { x: Math.round(node.position.x), y: Math.round(node.position.y) },
+    data: node.data,
+  })
+
+  const aMap = new Map(a.map(n => [n.id, normalize(n)]))
+
+  for (const node of b) {
+    const aNode = aMap.get(node.id)
+    if (!aNode) return false
+    if (JSON.stringify(aNode) !== JSON.stringify(normalize(node))) return false
+  }
+
+  return true
+}
+
+/**
+ * Compare two edge arrays for equality
+ */
+function edgesEqual(a: FlowEdge[], b: FlowEdge[]): boolean {
+  if (a.length !== b.length) return false
+
+  const normalize = (edge: FlowEdge) => ({
+    id: edge.id,
+    source: edge.source,
+    target: edge.target,
+    sourceHandle: edge.sourceHandle,
+    targetHandle: edge.targetHandle,
+    label: edge.label,
+  })
+
+  const aMap = new Map(a.map(e => [e.id, normalize(e)]))
+
+  for (const edge of b) {
+    const aEdge = aMap.get(edge.id)
+    if (!aEdge) return false
+    if (JSON.stringify(aEdge) !== JSON.stringify(normalize(edge))) return false
+  }
+
+  return true
+}
+
+/**
+ * Check if current state differs from snapshot
+ */
+function hasChanges(current: FlowSnapshot, original: FlowSnapshot | null): boolean {
+  if (!original) return true // New flow is always dirty if it has content
+
+  if (current.flowName !== original.flowName) return true
+  if (current.flowDescription !== original.flowDescription) return true
+  if (current.isGlobal !== original.isGlobal) return true
+  if (current.isActive !== original.isActive) return true
+  if (JSON.stringify(current.tags) !== JSON.stringify(original.tags)) return true
+  if (JSON.stringify(current.variableTransforms) !== JSON.stringify(original.variableTransforms)) return true
+  if (!nodesEqual(current.nodes, original.nodes)) return true
+  if (!edgesEqual(current.edges, original.edges)) return true
+
+  return false
+}
+
 type FlowNode = Node<FlowNodeData, string>
 type FlowEdge = Edge
 
@@ -65,8 +172,10 @@ interface FlowState {
   isGlobal: boolean
   isActive: boolean
   tags: string[]
-  isDirty: boolean
   saveVersion: number // Increments on each save to trigger list refresh
+
+  // Change detection
+  originalSnapshot: FlowSnapshot | null
 
   // Simulation state
   isSimulating: boolean
@@ -126,6 +235,9 @@ interface FlowState {
   updateNodeTransform: (nodeId: string, transformId: string, transform: Partial<VariableTransform>) => void
   removeNodeTransform: (nodeId: string, transformId: string) => void
   setVariableTransforms: (transforms: VariableTransformScope) => void
+
+  // Computed dirty state
+  isDirty: () => boolean
 }
 
 const initialNodes: FlowNode[] = [
@@ -139,7 +251,18 @@ const initialNodes: FlowNode[] = [
 
 const initialEdges: FlowEdge[] = []
 
-export const useFlowStore = create<FlowState>((set) => ({
+const initialSnapshot: FlowSnapshot = {
+  nodes: initialNodes,
+  edges: initialEdges,
+  flowName: 'Novo Fluxo',
+  flowDescription: '',
+  isGlobal: false,
+  isActive: true,
+  tags: [],
+  variableTransforms: { global: [], byNode: {} },
+}
+
+export const useFlowStore = create<FlowState>((set, get) => ({
   // Initial state
   nodes: initialNodes,
   edges: initialEdges,
@@ -151,7 +274,7 @@ export const useFlowStore = create<FlowState>((set) => ({
   isGlobal: false,
   isActive: true,
   tags: [],
-  isDirty: false,
+  originalSnapshot: initialSnapshot,
 
   isSimulating: false,
   simulationId: null,
@@ -168,34 +291,47 @@ export const useFlowStore = create<FlowState>((set) => ({
     byNode: {},
   },
 
+  // Computed dirty state - compares current state to original snapshot
+  isDirty: () => {
+    const state = get()
+    const current: FlowSnapshot = {
+      nodes: state.nodes,
+      edges: state.edges,
+      flowName: state.flowName,
+      flowDescription: state.flowDescription,
+      isGlobal: state.isGlobal,
+      isActive: state.isActive,
+      tags: state.tags,
+      variableTransforms: state.variableTransforms,
+    }
+    return hasChanges(current, state.originalSnapshot)
+  },
+
   // Node/Edge actions
-  setNodes: (nodes) => set({ nodes, isDirty: true }),
-  setEdges: (edges) => set({ edges, isDirty: true }),
+  setNodes: (nodes) => set({ nodes }),
+  setEdges: (edges) => set({ edges }),
 
   onNodesChange: (changes) =>
     set((state) => ({
       nodes: applyNodeChanges(changes, state.nodes) as FlowNode[],
-      isDirty: true,
     })),
 
   onEdgesChange: (changes) =>
     set((state) => ({
       edges: applyEdgeChanges(changes, state.edges),
-      isDirty: true,
     })),
 
   onConnect: (connection) =>
     set((state) => {
       const newEdge: FlowEdge = {
         id: `edge-${uuid()}`,
-        source: connection.source!,
-        target: connection.target!,
+        source: connection.source ?? '',
+        target: connection.target ?? '',
         sourceHandle: connection.sourceHandle ?? undefined,
         targetHandle: connection.targetHandle ?? undefined,
       }
       return {
         edges: [...state.edges, newEdge],
-        isDirty: true,
       }
     }),
 
@@ -216,7 +352,6 @@ export const useFlowStore = create<FlowState>((set) => ({
       nodes: [...state.nodes, newNode],
       selectedNodeId: id,
       isPanelOpen: true,
-      isDirty: true,
     }))
   },
 
@@ -225,7 +360,6 @@ export const useFlowStore = create<FlowState>((set) => ({
       nodes: state.nodes.map((node) =>
         node.id === nodeId ? { ...node, data: { ...node.data, ...data } } : node
       ),
-      isDirty: true,
     })),
 
   deleteNode: (nodeId) =>
@@ -235,7 +369,6 @@ export const useFlowStore = create<FlowState>((set) => ({
         (edge) => edge.source !== nodeId && edge.target !== nodeId
       ),
       selectedNodeId: state.selectedNodeId === nodeId ? null : state.selectedNodeId,
-      isDirty: true,
     })),
 
   selectNode: (nodeId) =>
@@ -251,6 +384,34 @@ export const useFlowStore = create<FlowState>((set) => ({
 
   // Flow actions
   loadFlow: (flow) => {
+    const nodes = flow.nodes.map((n) => ({
+      id: n.id,
+      type: n.type,
+      position: n.position,
+      data: hydrateNodeData(n.data),
+    }))
+    const edges = flow.edges.map((e) => ({
+      id: e.id,
+      source: e.source,
+      target: e.target,
+      sourceHandle: e.source_handle,
+      targetHandle: e.target_handle,
+      label: e.label,
+    }))
+    const variableTransforms = { global: [], byNode: {} } as VariableTransformScope
+
+    // Create snapshot of loaded state
+    const snapshot = createSnapshot({
+      nodes,
+      edges,
+      flowName: flow.name,
+      flowDescription: flow.description ?? '',
+      isGlobal: flow.is_global,
+      isActive: flow.is_active,
+      tags: flow.tags,
+      variableTransforms,
+    })
+
     set({
       flowId: flow.id,
       flowName: flow.name,
@@ -258,24 +419,13 @@ export const useFlowStore = create<FlowState>((set) => ({
       isGlobal: flow.is_global,
       isActive: flow.is_active,
       tags: flow.tags,
-      nodes: flow.nodes.map((n) => ({
-        id: n.id,
-        type: n.type,
-        position: n.position,
-        data: hydrateNodeData(n.data),
-      })),
-      edges: flow.edges.map((e) => ({
-        id: e.id,
-        source: e.source,
-        target: e.target,
-        sourceHandle: e.source_handle,
-        targetHandle: e.target_handle,
-        label: e.label,
-      })),
+      nodes,
+      edges,
       viewport: flow.viewport,
-      isDirty: false,
       selectedNodeId: null,
       isPanelOpen: false,
+      variableTransforms,
+      originalSnapshot: snapshot,
     })
   },
 
@@ -290,10 +440,10 @@ export const useFlowStore = create<FlowState>((set) => ({
       isGlobal: false,
       isActive: true,
       tags: [],
-      isDirty: false,
       selectedNodeId: null,
       isPanelOpen: false,
       variableTransforms: { global: [], byNode: {} },
+      originalSnapshot: initialSnapshot,
     }),
 
   setFlowMeta: (meta) =>
@@ -303,12 +453,14 @@ export const useFlowStore = create<FlowState>((set) => ({
       isGlobal: meta.isGlobal ?? state.isGlobal,
       isActive: meta.isActive ?? state.isActive,
       tags: meta.tags ?? state.tags,
-      isDirty: true,
     })),
 
   setFlowId: (flowId) => set({ flowId }),
 
-  markClean: () => set((state) => ({ isDirty: false, saveVersion: state.saveVersion + 1 })),
+  markClean: () => set((state) => ({
+    saveVersion: state.saveVersion + 1,
+    originalSnapshot: createSnapshot(state),
+  })),
 
   // Simulation actions
   startSimulation: (simulationId) =>
@@ -343,7 +495,6 @@ export const useFlowStore = create<FlowState>((set) => ({
         ...state.variableTransforms,
         global: [...state.variableTransforms.global, transform],
       },
-      isDirty: true,
     })),
 
   updateGlobalTransform: (transformId, updates) =>
@@ -354,7 +505,6 @@ export const useFlowStore = create<FlowState>((set) => ({
           t.id === transformId ? { ...t, ...updates } : t
         ),
       },
-      isDirty: true,
     })),
 
   removeGlobalTransform: (transformId) =>
@@ -363,7 +513,6 @@ export const useFlowStore = create<FlowState>((set) => ({
         ...state.variableTransforms,
         global: state.variableTransforms.global.filter((t) => t.id !== transformId),
       },
-      isDirty: true,
     })),
 
   addNodeTransform: (nodeId, transform) =>
@@ -375,7 +524,6 @@ export const useFlowStore = create<FlowState>((set) => ({
           [nodeId]: [...(state.variableTransforms.byNode[nodeId] ?? []), transform],
         },
       },
-      isDirty: true,
     })),
 
   updateNodeTransform: (nodeId, transformId, updates) =>
@@ -389,7 +537,6 @@ export const useFlowStore = create<FlowState>((set) => ({
           ),
         },
       },
-      isDirty: true,
     })),
 
   removeNodeTransform: (nodeId, transformId) =>
@@ -403,13 +550,11 @@ export const useFlowStore = create<FlowState>((set) => ({
           ),
         },
       },
-      isDirty: true,
     })),
 
   setVariableTransforms: (transforms) =>
     set({
       variableTransforms: transforms,
-      isDirty: true,
     }),
 }))
 
@@ -429,6 +574,8 @@ function getDefaultLabel(type: (typeof FlowNodeType)[keyof typeof FlowNodeType])
       return 'Aguardar Resposta'
     case FlowNodeType.CONDITIONAL:
       return 'Condição'
+    case FlowNodeType.SEMANTIC_CONDITIONS:
+      return 'Condições Semânticas'
     default:
       return 'Bloco'
   }

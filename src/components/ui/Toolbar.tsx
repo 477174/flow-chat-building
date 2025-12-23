@@ -215,7 +215,7 @@ export default function Toolbar() {
             className="text-lg font-semibold text-gray-800 bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-1"
             placeholder="Nome do fluxo"
           />
-          {isDirty && (
+          {isDirty() && (
             <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded">
               Não salvo
             </span>
@@ -253,7 +253,7 @@ export default function Toolbar() {
         <button
           type="button"
           onClick={handleSave}
-          disabled={isSaving}
+          disabled={isSaving || !isDirty()}
           className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
           title="Salvar fluxo no servidor"
         >

@@ -81,7 +81,7 @@ export function useFlowUrlSync() {
       const targetFlowId = event.state?.flowId || getFlowIdFromUrl()
 
       if (targetFlowId && targetFlowId !== flowId) {
-        if (isDirty) {
+        if (isDirty()) {
           const confirm = window.confirm(
             'Você tem alterações não salvas. Deseja continuar?'
           )
@@ -94,7 +94,7 @@ export function useFlowUrlSync() {
         }
         await loadFlowById(targetFlowId)
       } else if (!targetFlowId && flowId) {
-        if (isDirty) {
+        if (isDirty()) {
           const confirm = window.confirm(
             'Você tem alterações não salvas. Deseja continuar?'
           )
