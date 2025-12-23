@@ -6,6 +6,7 @@ export const FlowNodeType = {
   OPTION_LIST: 'option_list',
   WAIT_RESPONSE: 'wait_response',
   CONDITIONAL: 'conditional',
+  SEMANTIC_CONDITIONS: 'semantic_conditions',
   START: 'start',
   END: 'end',
 } as const
@@ -71,6 +72,12 @@ export interface FlowCondition {
   next_node_id?: string
 }
 
+export interface SemanticCondition {
+  id: string
+  prompt: string
+  next_node_id?: string
+}
+
 export type TimeoutUnit = 'seconds' | 'minutes' | 'hours'
 
 export interface FlowNodeData extends Record<string, unknown> {
@@ -94,6 +101,8 @@ export interface FlowNodeData extends Record<string, unknown> {
   options?: FlowListOption[]
   // Smart understanding (for button, option_list)
   smart_understanding_enabled?: boolean     // Uses AI to interpret text responses
+  // Semantic conditions (for semantic_conditions node)
+  semantic_conditions?: SemanticCondition[] // AI-based routing using embeddings
 }
 
 export interface FlowNodePosition {

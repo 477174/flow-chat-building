@@ -8,6 +8,7 @@ import {
   type FlowButtonOption,
   type FlowCondition,
   type FlowListOption,
+  type SemanticCondition,
   type TimeoutUnit,
 } from '@/types/flow'
 import { useAvailableVariables, type AvailableVariable } from '@/hooks/useAvailableVariables'
@@ -279,6 +280,29 @@ export default function NodePanel() {
             onChange={(conditions) => updateNodeData(node.id, { conditions })}
             availableVariables={availableVariables}
           />
+        )}
+
+        {/* Semantic Conditions (for semantic_conditions node) */}
+        {type === 'semantic_conditions' && (
+          <>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Mensagem (opcional)
+              </label>
+              <VariableTextEditor
+                value={data.content ?? ''}
+                onChange={(content) => updateNodeData(node.id, { content })}
+                availableVariables={availableVariables}
+                placeholder="Mensagem a ser enviada antes de aguardar resposta..."
+                rows={3}
+              />
+            </div>
+
+            <SemanticConditionsEditor
+              conditions={data.semantic_conditions ?? []}
+              onChange={(conditions) => updateNodeData(node.id, { semantic_conditions: conditions })}
+            />
+          </>
         )}
 
         {/* Smart Understanding Toggle (for button, option_list) */}
@@ -677,6 +701,71 @@ function OptionsEditor({
             Adicionar Opção
           </button>
         )}
+      </div>
+    </div>
+  )
+}
+
+function SemanticConditionsEditor({
+  conditions,
+  onChange,
+}: {
+  conditions: SemanticCondition[]
+  onChange: (conditions: SemanticCondition[]) => void
+}) {
+  const addCondition = () => {
+    onChange([
+      ...conditions,
+      { id: uuid(), prompt: '' },
+    ])
+  }
+
+  const updateCondition = (id: string, updates: Partial<SemanticCondition>) => {
+    onChange(conditions.map((c) => (c.id === id ? { ...c, ...updates } : c)))
+  }
+
+  const removeCondition = (id: string) => {
+    onChange(conditions.filter((c) => c.id !== id))
+  }
+
+  return (
+    <div>
+      <span className="block text-sm font-medium text-gray-700 mb-2">
+        Condições Semânticas
+      </span>
+      <p className="text-xs text-gray-500 mb-3">
+        Descreva os tipos de mensagens que devem ser roteadas para cada caminho.
+        A IA usará busca semântica para encontrar a melhor correspondência.
+      </p>
+      <div className="space-y-2">
+        {conditions.map((condition) => (
+          <div key={condition.id} className="p-2 bg-cyan-50 rounded-lg space-y-2 border border-cyan-200">
+            <div className="flex items-start gap-2">
+              <textarea
+                value={condition.prompt}
+                onChange={(e) => updateCondition(condition.id, { prompt: e.target.value })}
+                className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-cyan-500 resize-none"
+                placeholder="Ex: O usuário quer saber sobre preços e valores"
+                rows={2}
+              />
+              <button
+                type="button"
+                onClick={() => removeCondition(condition.id)}
+                className="p-1 text-red-500 hover:bg-red-50 rounded flex-shrink-0"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={addCondition}
+          className="flex items-center justify-center gap-1 w-full px-3 py-2 text-sm text-cyan-600 bg-cyan-50 rounded-lg hover:bg-cyan-100 border border-cyan-200"
+        >
+          <Plus className="w-4 h-4" />
+          Adicionar Condição Semântica
+        </button>
       </div>
     </div>
   )
