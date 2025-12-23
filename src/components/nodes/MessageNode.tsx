@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, useState } from 'react'
 import { Handle, Position, type NodeProps } from '@xyflow/react'
 import { MessageSquare, Image, FileAudio, Video, FileText, Clock } from 'lucide-react'
 import type { CustomNode, FlowMessageType } from '@/types/flow'
@@ -67,14 +67,34 @@ function MessageNode({ id, data, selected }: NodeProps<CustomNode>) {
   const hasTimeoutConfig = data.timeout_seconds != null // Has config even if disabled
   const occupancyCount = useNodeOccupancy(id)
 
+  // Lazy load iframes only when node is selected (for performance)
+  const [iframeLoaded, setIframeLoaded] = useState(false)
+
   // Use wider node for media content
   const hasMedia = mediaUrl && (messageType === 'video' || messageType === 'image' || messageType === 'audio')
 
   const renderMediaPreview = () => {
     if (!mediaUrl) return null
 
-    // Check if it's a Google Drive URL - use iframe embed if so
+    // Check if it's a Google Drive URL
     const googleDriveEmbedUrl = getGoogleDriveEmbedUrl(mediaUrl)
+
+    // For Google Drive, show placeholder until selected (lazy load iframes)
+    if (googleDriveEmbedUrl && !selected && !iframeLoaded) {
+      return (
+        <div className="px-2 pb-2">
+          <div
+            className="w-full aspect-square rounded border border-gray-200 bg-gray-100 flex items-center justify-center cursor-pointer hover:bg-gray-200"
+            onClick={() => setIframeLoaded(true)}
+          >
+            <div className="text-center text-gray-500 text-xs">
+              <Image className="w-8 h-8 mx-auto mb-1 text-gray-400" />
+              Click to load preview
+            </div>
+          </div>
+        </div>
+      )
+    }
 
     switch (messageType) {
       case 'image':
@@ -85,7 +105,7 @@ function MessageNode({ id, data, selected }: NodeProps<CustomNode>) {
                 src={googleDriveEmbedUrl}
                 className="w-full aspect-square rounded border border-gray-200"
                 allow="autoplay; fullscreen"
-                allowFullScreen
+                loading="lazy"
                 title="Image preview"
               />
             </div>
@@ -98,6 +118,7 @@ function MessageNode({ id, data, selected }: NodeProps<CustomNode>) {
                 src={mediaUrl}
                 alt="Preview"
                 className="max-w-full max-h-full object-contain"
+                loading="lazy"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none'
                 }}
@@ -113,6 +134,7 @@ function MessageNode({ id, data, selected }: NodeProps<CustomNode>) {
                 src={googleDriveEmbedUrl}
                 className="w-full h-20 rounded border border-gray-200"
                 allow="autoplay"
+                loading="lazy"
                 title="Audio preview"
               />
             </div>
@@ -124,6 +146,7 @@ function MessageNode({ id, data, selected }: NodeProps<CustomNode>) {
               src={mediaUrl}
               controls
               className="w-full"
+              preload="none"
               onError={(e) => {
                 e.currentTarget.style.display = 'none'
               }}
@@ -138,7 +161,7 @@ function MessageNode({ id, data, selected }: NodeProps<CustomNode>) {
                 src={googleDriveEmbedUrl}
                 className="w-full aspect-square rounded border border-gray-200"
                 allow="autoplay; fullscreen"
-                allowFullScreen
+                loading="lazy"
                 title="Video preview"
               />
             </div>
@@ -151,6 +174,7 @@ function MessageNode({ id, data, selected }: NodeProps<CustomNode>) {
                 src={mediaUrl}
                 controls
                 className="max-w-full max-h-full object-contain"
+                preload="none"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none'
                 }}

@@ -13,6 +13,7 @@ import {
 import '@xyflow/react/dist/style.css'
 import { v4 as uuid } from 'uuid'
 import { Search, Users, X } from 'lucide-react'
+import { useShallow } from 'zustand/react/shallow'
 
 import { useFlowStore } from '@/stores/flowStore'
 import { nodeTypes } from './nodes'
@@ -60,20 +61,31 @@ export default function FlowBuilder() {
   const setEdges = useFlowStore((state) => state.setEdges)
   const flowId = useFlowStore((state) => state.flowId)
 
+  // Only track timeout_enabled state per node (not positions)
+  // This prevents recalculation during drag operations
+  const nodeTimeoutStates = useFlowStore(
+    useShallow((state) =>
+      Object.fromEntries(
+        state.nodes
+          .filter((n) => n.data.timeout_enabled !== undefined)
+          .map((n) => [n.id, Boolean(n.data.timeout_enabled)])
+      )
+    )
+  )
+
   // Filter out timeout edges when timeout is disabled on source node
   const visibleEdges = useMemo(() => {
     return edges.filter((edge) => {
       // If edge is from a timeout handle, check if timeout is enabled on source node
       if (edge.sourceHandle === 'timeout') {
-        const sourceNode = nodes.find((n) => n.id === edge.source)
-        // Hide edge if timeout is disabled on source node
-        if (sourceNode && !sourceNode.data.timeout_enabled) {
+        // Use the optimized timeout state map
+        if (nodeTimeoutStates[edge.source] === false) {
           return false
         }
       }
       return true
     })
-  }, [edges, nodes])
+  }, [edges, nodeTimeoutStates])
 
   // Apply random HSL colors to edges
   const coloredEdges = useColoredEdges(visibleEdges)
