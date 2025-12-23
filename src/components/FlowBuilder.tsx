@@ -25,6 +25,7 @@ import LeadSearchPanel from './ui/LeadSearchPanel'
 import { OccupancyProvider } from '@/contexts/OccupancyContext'
 import { useOccupancyContext } from '@/hooks/useOccupancyContext'
 import { useColoredEdges } from '@/hooks/useColoredEdges'
+import { useFlowUrlSync } from '@/hooks/useFlowUrlSync'
 import type { FlowNodeData, FlowNodeType } from '@/types/flow'
 
 type FlowNode = Node<FlowNodeData, string>
@@ -40,6 +41,9 @@ export default function FlowBuilder() {
   const reactFlowInstance = useRef<ReactFlowInstance<FlowNode, FlowEdge> | null>(null)
   const [clipboard, setClipboard] = useState<ClipboardData | null>(null)
   const [showLeadSearch, setShowLeadSearch] = useState(false)
+
+  // Sync flow ID with browser URL and history
+  useFlowUrlSync()
 
   const {
     nodes,
@@ -263,6 +267,8 @@ export default function FlowBuilder() {
                       return '#f59e0b'
                     case 'conditional':
                       return '#14b8a6'
+                    case 'semantic_conditions':
+                      return '#06b6d4'
                     default:
                       return '#6b7280'
                   }
@@ -309,6 +315,7 @@ function NodePalette() {
     { type: 'option_list', label: 'Lista de Opções', color: 'bg-indigo-500' },
     { type: 'wait_response', label: 'Atraso', color: 'bg-amber-500' },
     { type: 'conditional', label: 'Condição', color: 'bg-teal-500' },
+    { type: 'semantic_conditions', label: 'Condições Semânticas', color: 'bg-cyan-500' },
     { type: 'end', label: 'Fim', color: 'bg-red-500' },
   ]
 

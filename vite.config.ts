@@ -21,4 +21,6 @@ export default defineConfig({
       },
     },
   },
+  // Handle SPA routing - serve index.html for /flows/* paths
+  appType: 'spa',
 })
