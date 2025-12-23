@@ -1,21 +1,24 @@
-import { X, Trash2, Plus, ChevronDown, ChevronRight, Users, Phone } from 'lucide-react'
-import { useState, useMemo } from 'react'
+import { ChevronDown, ChevronRight, Database, Phone, Plus, Trash2, Users, X } from 'lucide-react'
+import { useMemo, useState } from 'react'
 import { v4 as uuid } from 'uuid'
+
+import { useAvailableVariables, type AvailableVariable } from '@/hooks/useAvailableVariables'
+import { useNodeLeads } from '@/hooks/useOccupancyContext'
 import { useFlowStore } from '@/stores/flowStore'
 import {
-  FlowMessageType,
   FlowConditionOperator,
+  FlowMessageType,
   type FlowButtonOption,
   type FlowCondition,
   type FlowListOption,
   type SemanticCondition,
   type TimeoutUnit,
 } from '@/types/flow'
-import { useAvailableVariables, type AvailableVariable } from '@/hooks/useAvailableVariables'
-import { useNodeLeads } from '@/hooks/useOccupancyContext'
-import VariableTextEditor from './VariableTextEditor'
-import VariablePanel from './VariablePanel'
+
 import ComboboxInput, { type ComboboxOption } from './ComboboxInput'
+import KnowledgeBaseManager from './KnowledgeBaseManager'
+import VariablePanel from './VariablePanel'
+import VariableTextEditor from './VariableTextEditor'
 
 export default function NodePanel() {
   // Use individual selectors to prevent unnecessary re-renders
@@ -825,37 +828,16 @@ interface AgentNodeEditorProps {
   availableVariables: AvailableVariable[]
 }
 
-function AgentNodeEditor({ data, onChange, availableVariables }: AgentNodeEditorProps) {
-  const exitKeywords = (data.agent_exit_keywords as string[]) || []
-  const [newKeyword, setNewKeyword] = useState('')
+function AgentNodeEditor({ data, onChange }: AgentNodeEditorProps) {
+  const selectedKbIds = (data.agent_knowledge_base_ids as string[]) || []
+  const [showKbSection, setShowKbSection] = useState(selectedKbIds.length > 0)
 
-  const addExitKeyword = () => {
-    if (newKeyword.trim() && !exitKeywords.includes(newKeyword.trim())) {
-      onChange({ agent_exit_keywords: [...exitKeywords, newKeyword.trim()] })
-      setNewKeyword('')
-    }
-  }
-
-  const removeExitKeyword = (keyword: string) => {
-    onChange({ agent_exit_keywords: exitKeywords.filter(k => k !== keyword) })
+  const handleKbSelectionChange = (ids: string[]) => {
+    onChange({ agent_knowledge_base_ids: ids })
   }
 
   return (
     <div className="space-y-4">
-      {/* Welcome Message */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Mensagem de Boas-vindas
-        </label>
-        <VariableTextEditor
-          value={(data.agent_welcome_message as string) ?? ''}
-          onChange={(value) => onChange({ agent_welcome_message: value })}
-          availableVariables={availableVariables}
-          placeholder="Mensagem enviada quando o lead entra no agente..."
-          rows={2}
-        />
-      </div>
-
       {/* Instructions */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -869,92 +851,39 @@ function AgentNodeEditor({ data, onChange, availableVariables }: AgentNodeEditor
           rows={6}
         />
         <p className="mt-1 text-xs text-gray-500">
-          Defina o comportamento e personalidade do agente.
+          O agente processa uma mensagem e responde, seguindo para o próximo bloco. Para interação contínua, crie um loop no fluxo.
         </p>
       </div>
 
-      {/* Max Turns */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Máximo de Turnos
-        </label>
-        <input
-          type="number"
-          min="1"
-          value={(data.agent_max_turns as number) ?? ''}
-          onChange={(e) => onChange({ agent_max_turns: e.target.value ? parseInt(e.target.value) : undefined })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-          placeholder="Ilimitado"
-        />
-        <p className="mt-1 text-xs text-gray-500">
-          Número máximo de trocas de mensagens antes de sair automaticamente.
-        </p>
-      </div>
-
-      {/* Exit Keywords */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Palavras de Saída
-        </label>
-        <div className="flex gap-2 mb-2">
-          <input
-            type="text"
-            value={newKeyword}
-            onChange={(e) => setNewKeyword(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault()
-                addExitKeyword()
-              }
-            }}
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-            placeholder="Ex: fim, sair, tchau"
-          />
-          <button
-            type="button"
-            onClick={addExitKeyword}
-            className="px-3 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
-        </div>
-        {exitKeywords.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {exitKeywords.map((keyword) => (
-              <span
-                key={keyword}
-                className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 text-sm rounded"
-              >
-                {keyword}
-                <button
-                  type="button"
-                  onClick={() => removeExitKeyword(keyword)}
-                  className="hover:text-purple-900"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </span>
-            ))}
-          </div>
-        )}
-        <p className="mt-1 text-xs text-gray-500">
-          Quando o usuário digitar uma dessas palavras, o agente encerra e segue para o próximo bloco.
-        </p>
-      </div>
-
-      {/* Knowledge Base (placeholder for future) */}
+      {/* Knowledge Base Section */}
       <div className="border-t border-gray-200 pt-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h4 className="text-sm font-medium text-gray-700">Base de Conhecimento</h4>
-            <p className="text-xs text-gray-500 mt-0.5">
-              Em breve: conecte documentos para RAG
-            </p>
+        <button
+          type="button"
+          onClick={() => setShowKbSection(!showKbSection)}
+          className="w-full flex items-center justify-between mb-3"
+        >
+          <div className="flex items-center gap-2">
+            <Database className="w-4 h-4 text-purple-600" />
+            <h4 className="text-sm font-medium text-gray-700">Base de Conhecimento (RAG)</h4>
+            {selectedKbIds.length > 0 && (
+              <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
+                {selectedKbIds.length}
+              </span>
+            )}
           </div>
-          <span className="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded">
-            Em breve
-          </span>
-        </div>
+          {showKbSection ? (
+            <ChevronDown className="w-4 h-4 text-gray-500" />
+          ) : (
+            <ChevronRight className="w-4 h-4 text-gray-500" />
+          )}
+        </button>
+
+        {showKbSection && (
+          <KnowledgeBaseManager
+            selectedKbIds={selectedKbIds}
+            onSelectionChange={handleKbSelectionChange}
+          />
+        )}
       </div>
     </div>
   )

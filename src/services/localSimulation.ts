@@ -186,15 +186,9 @@ function processNode(
     }
 
     case FlowNodeType.AGENT: {
-      // Send welcome message if exists
-      if (data.agent_welcome_message) {
-        const content = substituteVariables(data.agent_welcome_message as string, state.variables)
-        state.messages.push(createMessage(id, 'outgoing', content))
-      } else {
-        // Default message for simulation
-        state.messages.push(createMessage(id, 'outgoing', '🤖 Agente IA ativado. (Simulação local - respostas do agente só funcionam via backend)'))
-      }
-      // Agent requires backend processing, wait for input
+      // Single-turn agent: waits for user input, processes one message, then exits
+      // In local simulation, just show a placeholder message and wait for input
+      state.messages.push(createMessage(id, 'outgoing', '🤖 Agente IA aguardando. (Simulação local - respostas do agente só funcionam via backend)'))
       state.status = FlowSimulationStatus.WAITING_INPUT
       break
     }
