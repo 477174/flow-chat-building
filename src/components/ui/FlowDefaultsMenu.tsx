@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
-import { Phone, Plus, X, Users, ChevronDown } from 'lucide-react'
+import { Phone, Plus, X, Users, ChevronDown, Loader2 } from 'lucide-react'
 import { useFlowStore } from '@/stores/flowStore'
-import { getActiveFlow } from '@/services/api'
+import { getActiveFlow, updateFlow } from '@/services/api'
 
 /**
  * Format phone number to display format
@@ -41,11 +41,33 @@ export default function FlowDefaultsMenu() {
   const [isOpen, setIsOpen] = useState(false)
   const [newPhone, setNewPhone] = useState('')
   const [error, setError] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
   const phoneWhitelist = useFlowStore((state) => state.phoneWhitelist)
   const setFlowMeta = useFlowStore((state) => state.setFlowMeta)
   const flowId = useFlowStore((state) => state.flowId)
+
+  // Auto-save phone whitelist to backend
+  const savePhoneWhitelist = async (newWhitelist: string[]) => {
+    if (!flowId) {
+      setError('Salve o fluxo primeiro')
+      return false
+    }
+
+    setIsSaving(true)
+    try {
+      await updateFlow(flowId, { phone_whitelist: newWhitelist })
+      setFlowMeta({ phoneWhitelist: newWhitelist })
+      return true
+    } catch (err) {
+      console.error('Failed to save phone whitelist:', err)
+      setError('Erro ao salvar')
+      return false
+    } finally {
+      setIsSaving(false)
+    }
+  }
 
   // Check if this flow is the global active flow
   const [isGlobalActive, setIsGlobalActive] = useState(false)
@@ -75,7 +97,7 @@ export default function FlowDefaultsMenu() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const handleAddPhone = () => {
+  const handleAddPhone = async () => {
     setError('')
 
     if (!newPhone.trim()) {
@@ -97,12 +119,14 @@ export default function FlowDefaultsMenu() {
       return
     }
 
-    setFlowMeta({ phoneWhitelist: [...phoneWhitelist, normalized] })
-    setNewPhone('')
+    const success = await savePhoneWhitelist([...phoneWhitelist, normalized])
+    if (success) {
+      setNewPhone('')
+    }
   }
 
-  const handleRemovePhone = (phone: string) => {
-    setFlowMeta({ phoneWhitelist: phoneWhitelist.filter(p => p !== phone) })
+  const handleRemovePhone = async (phone: string) => {
+    await savePhoneWhitelist(phoneWhitelist.filter(p => p !== phone))
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -168,9 +192,10 @@ export default function FlowDefaultsMenu() {
               <button
                 type="button"
                 onClick={handleAddPhone}
-                className="px-3 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
+                disabled={isSaving}
+                className="px-3 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50"
               >
-                <Plus className="w-4 h-4" />
+                {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
               </button>
             </div>
           </div>
