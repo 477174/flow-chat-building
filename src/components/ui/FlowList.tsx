@@ -19,9 +19,11 @@ export default function FlowList() {
     setIsLoading(true)
     try {
       const data = await getFlows()
-      setFlows(data)
+      // Defensive: ensure data is an array
+      setFlows(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Failed to fetch flows:', error)
+      setFlows([])
     } finally {
       setIsLoading(false)
     }

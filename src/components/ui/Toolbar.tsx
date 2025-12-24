@@ -3,6 +3,7 @@ import { Save, Play, FileText, Settings, Upload, Download, Zap, ZapOff } from 'l
 import { useFlowStore } from '@/stores/flowStore'
 import { getActiveFlow, setActiveFlow, clearActiveFlow, createFlow, updateFlow } from '@/services/api'
 import type { FlowNodeType, FlowNodeBase, FlowEdgeBase } from '@/types/flow'
+import FlowDefaultsMenu from './FlowDefaultsMenu'
 
 export default function Toolbar() {
   // Use individual selectors to prevent unnecessary re-renders
@@ -65,6 +66,7 @@ export default function Toolbar() {
       is_global: state.isGlobal,
       is_active: state.isActive,
       tags: state.tags,
+      phone_whitelist: state.phoneWhitelist,
     }
 
     setIsSaving(true)
@@ -123,6 +125,7 @@ export default function Toolbar() {
       is_global: state.isGlobal,
       is_active: state.isActive,
       tags: state.tags,
+      phone_whitelist: state.phoneWhitelist,
     }
 
     // Create and download JSON file
@@ -159,6 +162,7 @@ export default function Toolbar() {
           is_global: flowData.is_global ?? false,
           is_active: flowData.is_active ?? true,
           tags: flowData.tags || [],
+          phone_whitelist: flowData.phone_whitelist || [],
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
           version: 1,
@@ -259,6 +263,8 @@ export default function Toolbar() {
           <Save className="w-4 h-4" />
           {isSaving ? 'Salvando...' : 'Salvar'}
         </button>
+
+        <FlowDefaultsMenu />
 
         <button
           type="button"

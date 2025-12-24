@@ -144,6 +144,7 @@ export interface FlowTemplate {
   is_global: boolean
   is_active: boolean
   tags: string[]
+  phone_whitelist: string[]  // Phone numbers that will use this flow as default
   client_id?: string
   created_at: string
   updated_at: string
@@ -160,6 +161,7 @@ export interface FlowTemplateCreate {
   is_global?: boolean
   is_active?: boolean
   tags?: string[]
+  phone_whitelist?: string[]
   client_id?: string
 }
 
@@ -172,6 +174,7 @@ export interface FlowTemplateUpdate {
   is_global?: boolean
   is_active?: boolean
   tags?: string[]
+  phone_whitelist?: string[]
 }
 
 export interface FlowSimulationMessage {

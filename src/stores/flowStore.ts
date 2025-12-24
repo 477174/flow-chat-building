@@ -66,6 +66,7 @@ interface FlowSnapshot {
   isGlobal: boolean
   isActive: boolean
   tagsJson: string
+  phoneWhitelistJson: string
   transformsJson: string
 }
 
@@ -80,6 +81,7 @@ function createSnapshot(state: {
   isGlobal: boolean
   isActive: boolean
   tags: string[]
+  phoneWhitelist: string[]
   variableTransforms: VariableTransformScope
 }): FlowSnapshot {
   // Normalize nodes (only compare id, type, rounded position, and data)
@@ -108,6 +110,7 @@ function createSnapshot(state: {
     isGlobal: state.isGlobal,
     isActive: state.isActive,
     tagsJson: JSON.stringify(state.tags),
+    phoneWhitelistJson: JSON.stringify(state.phoneWhitelist),
     transformsJson: JSON.stringify(state.variableTransforms),
   }
 }
@@ -125,6 +128,7 @@ function snapshotsEqual(a: FlowSnapshot | null, b: FlowSnapshot | null): boolean
     a.isGlobal === b.isGlobal &&
     a.isActive === b.isActive &&
     a.tagsJson === b.tagsJson &&
+    a.phoneWhitelistJson === b.phoneWhitelistJson &&
     a.transformsJson === b.transformsJson
   )
 }
@@ -140,6 +144,7 @@ interface FlowState {
   isGlobal: boolean
   isActive: boolean
   tags: string[]
+  phoneWhitelist: string[]  // Phone numbers that will use this flow as default
   saveVersion: number // Increments on each save to trigger list refresh
 
   // Change detection
@@ -182,6 +187,7 @@ interface FlowState {
     isGlobal?: boolean
     isActive?: boolean
     tags?: string[]
+    phoneWhitelist?: string[]
   }) => void
   setFlowId: (flowId: string) => void
   markClean: () => void
@@ -225,6 +231,7 @@ const initialSnapshot: FlowSnapshot = createSnapshot({
   isGlobal: false,
   isActive: true,
   tags: [],
+  phoneWhitelist: [],
   variableTransforms: { global: [], byNode: {} },
 })
 
@@ -241,6 +248,7 @@ export const useFlowStore = create<FlowState>()(
     isGlobal: false,
     isActive: true,
     tags: [],
+    phoneWhitelist: [],
     originalSnapshot: initialSnapshot,
     isDirty: false,
 
@@ -361,6 +369,7 @@ export const useFlowStore = create<FlowState>()(
         isGlobal: flow.is_global,
         isActive: flow.is_active,
         tags: flow.tags,
+        phoneWhitelist: flow.phone_whitelist ?? [],
         variableTransforms,
       })
 
@@ -371,6 +380,7 @@ export const useFlowStore = create<FlowState>()(
         isGlobal: flow.is_global,
         isActive: flow.is_active,
         tags: flow.tags,
+        phoneWhitelist: flow.phone_whitelist ?? [],
         nodes,
         edges,
         viewport: flow.viewport,
@@ -393,6 +403,7 @@ export const useFlowStore = create<FlowState>()(
         isGlobal: false,
         isActive: true,
         tags: [],
+        phoneWhitelist: [],
         selectedNodeId: null,
         isPanelOpen: false,
         variableTransforms: { global: [], byNode: {} },
@@ -407,6 +418,7 @@ export const useFlowStore = create<FlowState>()(
         isGlobal: meta.isGlobal ?? state.isGlobal,
         isActive: meta.isActive ?? state.isActive,
         tags: meta.tags ?? state.tags,
+        phoneWhitelist: meta.phoneWhitelist ?? state.phoneWhitelist,
       })),
 
     setFlowId: (flowId) => set({ flowId }),
@@ -525,6 +537,7 @@ useFlowStore.subscribe(
     isGlobal: state.isGlobal,
     isActive: state.isActive,
     tags: state.tags,
+    phoneWhitelist: state.phoneWhitelist,
     variableTransforms: state.variableTransforms,
     originalSnapshot: state.originalSnapshot,
   }),

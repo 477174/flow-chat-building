@@ -8,8 +8,15 @@ import type {
   FlowSimulationInput,
 } from '@/types/flow'
 
+// API base URL from environment variable
+// In development with Vite proxy: '/api' (default)
+// In production: full URL like 'https://api.example.com'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+  ? import.meta.env.VITE_API_BASE_URL
+  : '/api'
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -94,11 +101,22 @@ export async function sendSimulationInput(
   return data
 }
 
+// Helper to build WebSocket URL from API base URL
+function getWebSocketUrl(path: string): string {
+  // If API_BASE_URL is a full URL, extract host and use it
+  if (API_BASE_URL.startsWith('http://') || API_BASE_URL.startsWith('https://')) {
+    const url = new URL(API_BASE_URL)
+    const wsProtocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
+    return `${wsProtocol}//${url.host}${path}`
+  }
+  // Otherwise use current window location (for proxy mode)
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+  return `${protocol}//${window.location.host}${API_BASE_URL}${path}`
+}
+
 // WebSocket connection for real-time simulation
 export function createSimulationWebSocket(simulationId: string): WebSocket {
-  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-  const host = window.location.host
-  return new WebSocket(`${protocol}//${host}/api/simulations/${simulationId}/ws`)
+  return new WebSocket(getWebSocketUrl(`/simulations/${simulationId}/ws`))
 }
 
 // Occupancy & Lead Tracking
@@ -191,9 +209,7 @@ export async function getLeadsInFlow(
 
 // WebSocket for real-time occupancy updates
 export function createOccupancyWebSocket(flowId: string): WebSocket {
-  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-  const host = window.location.host
-  return new WebSocket(`${protocol}//${host}/api/flows/${flowId}/occupancy/ws`)
+  return new WebSocket(getWebSocketUrl(`/flows/${flowId}/occupancy/ws`))
 }
 
 // Active Flow Settings

@@ -2,9 +2,12 @@ import { useEffect, useRef, useCallback } from 'react'
 import { useFlowStore } from '@/stores/flowStore'
 import { getFlow } from '@/services/api'
 
+// Get base path from environment, removing trailing slash for consistency
+const BASE_PATH = (import.meta.env.VITE_BASE_PATH || '/').replace(/\/$/, '')
+
 /**
  * Hook to synchronize flow ID with browser URL and history.
- * URL format: /flows/{flowId} or / for no flow
+ * URL format: {basePath}/flows/{flowId} or {basePath}/ for no flow
  * - Reads flow ID from URL path on mount and loads the flow
  * - Updates URL when flow changes (push to history)
  * - Handles browser back/forward navigation
@@ -18,15 +21,17 @@ export function useFlowUrlSync() {
   const isNavigating = useRef(false)
   const initialLoadDone = useRef(false)
 
-  // Parse flow ID from URL path: /flows/{flowId}
+  // Parse flow ID from URL path: {basePath}/flows/{flowId}
   const getFlowIdFromUrl = useCallback((): string | null => {
-    const match = window.location.pathname.match(/^\/flows\/([^/]+)/)
+    const escapedBase = BASE_PATH.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const pattern = new RegExp(`^${escapedBase}/flows/([^/]+)`)
+    const match = window.location.pathname.match(pattern)
     return match ? match[1] : null
   }, [])
 
   // Update URL with flow ID as path
   const updateUrl = useCallback((id: string | null, replace = false) => {
-    const newPath = id ? `/flows/${id}` : '/'
+    const newPath = id ? `${BASE_PATH}/flows/${id}` : `${BASE_PATH}/`
 
     if (replace) {
       window.history.replaceState({ flowId: id }, '', newPath)
